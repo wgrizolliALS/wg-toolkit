@@ -63,13 +63,17 @@ def print_error(s: str, end: str = "\n", flush: bool = True, verbose: bool = Tru
 
 
 def print_done(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [DONE] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow_str()}] : [DONE] {s}", color="cyan", bold=True, end=end, flush=flush, verbose=verbose)
+
+
+def print_success(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
+    printc(f"[{timenow_str()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
 
 
 if __name__ == "__main__":
     printc("This module provides enhanced logging functions with color and timestamps.", color="cyan", bold=True)
     printc(
-        "Use print_log(), print_info(), print_warning(), print_attention(), print_error(), and print_done() for different log levels.",
+        "Use print_log(), print_info(), print_warning(), print_attention(), print_error(), and print_success() for different log levels.",
         color="cyan",
         bold=True,
     )
@@ -80,6 +84,7 @@ if __name__ == "__main__":
     print_attention("This is an attention message.")
     print_error("This is an error message.")
     print_done("This is a done message.")
+    print_success("This is a success message.")
 
     for _color in ["red", "green", "blue", "purple", "cyan"]:
         for _bold in [False, True]:
