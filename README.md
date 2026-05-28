@@ -6,7 +6,6 @@ Personal toolkit of reusable utilities — small, focused helpers used across la
 
 | Module | Description |
 | --- | --- |
-| `wg_toolkit.timestamps` | Date/time string formatters |
 | `wg_toolkit.logprint` | Colored terminal output |
 | `wg_toolkit.dataio` | DataFrame CSV save/load with metadata persistence |
 | `wg_toolkit.ports` | Serial port listing and cleanup |
