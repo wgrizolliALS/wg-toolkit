@@ -6,6 +6,9 @@ from wg_toolkit.logprint import print_info, print_warning, printc, print_error, 
 __all__ = [
     "list_serial_ports",
     "close_all_ports",
+    "close_serial_connection",
+    "serial_query",
+    "serial_batched",
 ]
 
 DEBUG = False
@@ -43,6 +46,24 @@ def close_all_ports():
             print_info(f"Closed port: {port.device}")
         except Exception as e:
             print_warning(f"Could not close port {port.device}: {e}")
+
+
+def close_serial_connection(port: str, verbose: bool = True):
+    """Attempt to close a serial connection on `port` if open.
+
+    Args:
+        port: Serial device path.
+        verbose: Enable informational printing about the close operation.
+    """
+    try:
+        ser = serial.Serial(port)
+        if ser.is_open:
+            ser.close()
+            print_info(f"Serial connection on {port} closed.", verbose=verbose)
+        else:
+            print_info(f"Serial connection on {port} was already closed.", verbose=verbose)
+    except Exception as e:
+        print_error(f"Failed to close serial connection on {port}: {e}", verbose=verbose)
 
 
 def serial_query(
