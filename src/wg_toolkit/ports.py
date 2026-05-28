@@ -1,12 +1,14 @@
 import serial
 from serial.tools import list_ports
-
-from wg_toolkit.logprint import print_info, print_warning, printc
+import time
+from wg_toolkit.logprint import print_info, print_warning, printc, print_error, print_done
 
 __all__ = [
     "list_serial_ports",
     "close_all_ports",
 ]
+
+DEBUG = False
 
 
 def list_serial_ports(verbose=False):
@@ -41,6 +43,120 @@ def close_all_ports():
             print_info(f"Closed port: {port.device}")
         except Exception as e:
             print_warning(f"Could not close port {port.device}: {e}")
+
+
+def serial_query(
+    cmd: str,
+    port: str,
+    baudrate: int = 9600,
+    wait_serial=False,
+    verbose: bool = False,
+    debug: bool = DEBUG,
+    wait_before_read: float = 0.05,
+) -> str | None:
+    """Send a command string to a serial device and read a single-line response.
+
+    This opens the serial port, writes `cmd`, optionally waits for data to become
+    available, then reads one line and returns it (or `None` on empty response
+    or error). Exceptions are caught and logged via `printc`.
+
+    Args:
+        cmd: Command string to send (a newline is appended).
+        port: Serial device path (e.g. COM3 or /dev/ttyUSB0).
+        baudrate: Serial baud rate.
+        wait_serial: If True, poll until data is available or a timeout occurs.
+        verbose: Enable informational printing.
+        debug: Enable debug printing.
+        wait_before_read: Sleep interval between polls when `wait_serial` is True.
+
+    Returns:
+        The decoded response string, or `None` on empty response or error.
+    """
+    printc(f"[DEBUG] : Attempting to open serial port {port} at baudrate {baudrate}", verbose=debug)
+
+    try:
+        with serial.Serial(port, baudrate=baudrate, timeout=0.5) as ser:
+            printc(f"[COMMAND] = {cmd}", verbose=verbose, color="cyan", bold=True)
+            ser.write(f"{cmd}\n".encode())
+
+            _time_init = time.time()
+            while wait_serial and ser.in_waiting == 0:
+                time.sleep(wait_before_read)
+                printc(f"[DEBUG] : Waiting for response from {cmd}...", verbose=debug)
+
+                if time.time() - _time_init >= 5 * ser.timeout:  # type: ignore
+                    raise TimeoutError(f"Timeout waiting for response to {cmd} on {port}")
+
+            response = ser.readline().decode(errors="ignore").strip()
+
+        if response == "":
+            printc(
+                "[RESPONSE] = [EMPTY PORT]",
+                verbose=verbose,
+                color="cyan",
+                bold=False,
+            )
+        else:
+            printc(
+                f"[RESPONSE] = {response}",
+                verbose=verbose,
+                color="green",
+                bold=True,
+            )
+
+        printc(f"[DEBUG] : {type(response) = }", verbose=debug)
+
+        return response
+
+    except serial.SerialException as e:
+        print_error(f"Error communicating with device on {port}: {e}", verbose=verbose)
+        return None
+    except TimeoutError as e:
+        print_error(f"{e}", verbose=verbose)
+        return None
+    except Exception as e:
+        print_error(f"Unexpected error on {port}: {e}", verbose=verbose)
+        return None
+
+
+def serial_batched(
+    cmds: list,
+    port: str,
+    verbose: bool = True,
+    debug: bool = DEBUG,
+    send_individually: bool = False,
+    wait_between_cmds: float = 0.05,
+) -> str | None:
+    """Send a list of serial commands either batched or individually.
+
+    If any command contains a question mark `?` (a query) or `send_individually` is
+    True, commands are sent one-by-one with a small delay between them. When
+    safe, the list can be joined with `;` and sent as a single batched write
+    which may be faster for write-only sequences.
+
+    Args:
+        cmds: List of command strings to send.
+        port: Serial device path.
+        verbose: Enable informational printing.
+        debug: Enable debug printing.
+        send_individually: Force sending commands individually.
+        wait_between_cmds: Seconds to sleep between commands.
+
+    Returns:
+        The last received response (or `None`).
+    """
+
+    res = None
+    if any("?" in _str for _str in cmds) or send_individually:
+        for cmd in cmds:
+            res = serial_query(cmd, port, verbose=verbose, debug=debug)
+            time.sleep(wait_between_cmds)
+    else:
+        batch_cmd = ";".join(cmds)
+        res = serial_query(batch_cmd, port, verbose=verbose, debug=debug)
+
+        time.sleep(wait_between_cmds)
+    return res
 
 
 if __name__ == "__main__":
