@@ -1,4 +1,4 @@
-from wg_toolkit.timestamps import timenow_str
+from wg_toolkit.misc import timenow_str
 
 __all__ = [
     "printc",
@@ -28,14 +28,14 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
         "blue": "94",
         "purple": "95",
         "cyan": "96",
+        "": "0",  # Default terminal color
     }
 
     if not verbose:
         return
 
     if color not in color_codes:
-        print(s, end=end, flush=flush)
-        return
+        raise ValueError(f"Invalid color '{color}'. Valid options are: {list(color_codes.keys())}")
 
     color_code = color_codes[color]
     bold_code = "1;" if bold else ""
@@ -64,3 +64,23 @@ def print_error(s: str, end: str = "\n", flush: bool = True, verbose: bool = Tru
 
 def print_done(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
     printc(f"[{timenow_str()}] : [DONE] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
+
+
+if __name__ == "__main__":
+    printc("This module provides enhanced logging functions with color and timestamps.", color="cyan", bold=True)
+    printc(
+        "Use print_log(), print_info(), print_warning(), print_attention(), print_error(), and print_done() for different log levels.",
+        color="cyan",
+        bold=True,
+    )
+
+    print_log("This is a log message.")
+    print_info("This is an info message.")
+    print_warning("This is a warning message.")
+    print_attention("This is an attention message.")
+    print_error("This is an error message.")
+    print_done("This is a done message.")
+
+    for _color in ["red", "green", "blue", "purple", "cyan"]:
+        for _bold in [False, True]:
+            printc(f"This is a message in {_color} color and bold={_bold}.", color=_color, bold=_bold)
