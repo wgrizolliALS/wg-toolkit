@@ -1,8 +1,6 @@
-from datetime import datetime
+from wg_toolkit.timestamps import timenow_str
 
 __all__ = [
-    "datenow_str",
-    "timenow_str",
     "printc",
     "print_log",
     "print_info",
@@ -11,14 +9,6 @@ __all__ = [
     "print_error",
     "print_done",
 ]
-
-
-def datenow_str():
-    return datetime.now().strftime("%Y%m%d_%H%M%S")
-
-
-def timenow_str():
-    return datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
 
 def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: bool = True, verbose: bool = True):
