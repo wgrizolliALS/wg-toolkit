@@ -28,6 +28,7 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
         "blue": "94",
         "purple": "95",
         "cyan": "96",
+        "gray": "90",
         "": "0",  # Default terminal color
     }
 
@@ -43,7 +44,7 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
 
 
 def print_log(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow_str()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_info(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
@@ -51,11 +52,11 @@ def print_info(s: str, end: str = "\n", flush: bool = True, verbose: bool = True
 
 
 def print_warning(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [WARNING] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow_str()}] : [WARNING] {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_attention(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [ATTENTION] {s}", color="red", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow_str()}] : [ATTENTION] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_error(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
@@ -86,6 +87,6 @@ if __name__ == "__main__":
     print_done("This is a done message.")
     print_success("This is a success message.")
 
-    for _color in ["red", "green", "blue", "purple", "cyan"]:
+    for _color in ["red", "green", "blue", "purple", "cyan", "gray", ""]:
         for _bold in [False, True]:
             printc(f"This is a message in {_color} color and bold={_bold}.", color=_color, bold=_bold)
