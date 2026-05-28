@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wg-toolkit"
+version = "0.1.0"
+description = "Personal toolkit of reusable utilities"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas",
+    "pyserial",
+]
+
+[project.optional-dependencies]
+dev = [
+    "nbstripout",
+    "pytest",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
