@@ -1,4 +1,4 @@
-from wg_toolkit.misc import timenow_str
+from wg_toolkit.misc import timenow
 
 __all__ = [
     "printc",
@@ -45,31 +45,31 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
 
 
 def print_log(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_info(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [INFO] {s}", color="blue", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : [INFO] {s}", color="blue", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_warning(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [WARNING] {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : [WARNING] {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_attention(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [ATTENTION] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : [ATTENTION] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_error(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [ERROR] {s}", color="red", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : [ERROR] {s}", color="red", bold=True, end=end, flush=flush, verbose=verbose)
 
 
 def print_done(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [DONE] {s}", color="cyan", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : [DONE] {s}", color="cyan", bold=True, end=end, flush=flush, verbose=verbose)
 
 
 def print_success(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow_str()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{timenow()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
 
 
 if __name__ == "__main__":
