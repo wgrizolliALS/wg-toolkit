@@ -82,20 +82,28 @@ SEC2DAY = 1 / DAY2SEC  # Conversion factor from seconds to days
 SDV2FWHM = 2 * np.sqrt(2 * np.log(2))
 FWHM2SDV = 1.0 / SDV2FWHM
 
-_MODULE_CONSTANTS = {k: v for k, v in globals().items() if k.isupper()}
+_MODULE_CONSTANTS = {k: v for k, v in locals().items() if not callable(v) and k.isupper()}
 
 
 def show_all_constants():
     """
     Prints all constants defined in this module.
     """
-    print("Physical and Numerical Constants:")
+    print("\n\n### Physical and Numerical Constants:\n")
     for name, value in _MODULE_CONSTANTS.items():
         try:
             print(f"{name}:\t{EngNumber(value, significant=5)} {ENG_UNITS.get(name.split('_')[0], '')}")
 
         except Exception:
             print(f"{name}:\t{value}")
+
+    print("")
+
+
+if __name__ == "__main__":
+    """
+    Prints all constants defined in this module.
+    """
 
     print(
         "\n## Recommended usage and example:\n\n"
@@ -105,8 +113,4 @@ def show_all_constants():
     )
 
 
-if __name__ == "__main__":
-    """
-    Prints all constants defined in this module.
-    """
     show_all_constants()

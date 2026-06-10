@@ -1,3 +1,23 @@
+"""
+
+# Description:
+
+This module provides enhanced logging functions that print messages
+with timestamps and color coding to the terminal.
+
+## Functions:
+
+printc,
+print_log,
+print_info,
+print_warning,
+print_attention,
+print_error,
+print_done,
+print_success,
+
+"""
+
 from wg_toolkit.misc import timenow
 
 __all__ = [
@@ -11,35 +31,36 @@ __all__ = [
     "print_success",
 ]
 
+_color_ANSI_Escape_codes = {
+    "red": "91",
+    "green": "92",
+    "blue": "94",
+    "purple": "95",
+    "cyan": "96",
+    "gray": "90",
+    "": "0",  # Default terminal color
+}
+
 
 def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: bool = True, verbose: bool = True):
     """Print `s` to stdout wrapped in ANSI color/bold escape codes.
 
     Args:
         s: The input string to colorize.
-        color: Optional color name (red, green, blue, purple, cyan).
+        color: Optional color name (red, green, blue, purple, cyan, gray, or default).
         bold: If True, make the text bold.
         end: String appended after the last character (default newline).
         flush: Whether to flush the output buffer.
         verbose: If False, suppress printing.
     """
-    color_codes = {
-        "red": "91",
-        "green": "92",
-        "blue": "94",
-        "purple": "95",
-        "cyan": "96",
-        "gray": "90",
-        "": "0",  # Default terminal color
-    }
 
     if not verbose:
         return
 
-    if color not in color_codes:
-        raise ValueError(f"Invalid color '{color}'. Valid options are: {list(color_codes.keys())}")
+    if color not in _color_ANSI_Escape_codes:
+        raise ValueError(f"Invalid color '{color}'. Valid options are: {list(_color_ANSI_Escape_codes.keys())}")
 
-    color_code = color_codes[color]
+    color_code = _color_ANSI_Escape_codes[color]
     bold_code = "1;" if bold else ""
     print(f"\033[{bold_code}{color_code}m{s}\033[0m", end=end, flush=flush)
 
@@ -71,23 +92,26 @@ def print_done(s: str, end: str = "\n", flush: bool = True, verbose: bool = True
 def print_success(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
     printc(f"[{timenow()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
 
+_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+
 
 if __name__ == "__main__":
-    printc("This module provides enhanced logging functions with color and timestamps.", color="cyan", bold=True)
-    printc(
-        "Use print_log(), print_info(), print_warning(), print_attention(), print_error(), and print_success() for different log levels.",
-        color="cyan",
-        bold=True,
-    )
+    printc("### This module provides enhanced logging functions with color and timestamps.", color="cyan", bold=True)
 
-    print_log("This is a log message.")
-    print_info("This is an info message.")
-    print_warning("This is a warning message.")
-    print_attention("This is an attention message.")
-    print_error("This is an error message.")
-    print_done("This is a done message.")
-    print_success("This is a success message.")
+    print("\n### wg-toolkit.logprint functions:")
+    for name in _MODULE_FUNCTIONS:
+        print(f"  {name}")
 
-    for _color in ["red", "green", "blue", "purple", "cyan", "gray", ""]:
+    print("\n### Example of logprint messages:")
+
+    print_log("This is a log message. Note the automatic timestamp.")
+    print_info("This is an info message. Note the automatic timestamp.")
+    print_warning("This is a warning message. Note the automatic timestamp.")
+    print_attention("This is an attention message. Note the automatic timestamp.")
+    print_error("This is an error message. Note the automatic timestamp.")
+    print_done("This is a done message. Note the automatic timestamp.")
+    print_success("This is a success message. Note the automatic timestamp.")
+
+    for _color in _color_ANSI_Escape_codes.keys():
         for _bold in [False, True]:
             printc(f"This is a message in {_color} color and bold={_bold}.", color=_color, bold=_bold)

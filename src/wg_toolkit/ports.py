@@ -179,8 +179,13 @@ def serial_batched(
         time.sleep(wait_between_cmds)
     return res
 
+_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
 
 if __name__ == "__main__":
+    print("\n### wg-toolkit.ports functions:")
+    for name in _MODULE_FUNCTIONS:
+        print(f"  {name}")
+
     printc("This module provides functions for listing and closing serial ports.", color="cyan", bold=True)
     printc(
         "Use list_serial_ports() to see available ports and close_all_ports() to close them.", color="cyan", bold=True

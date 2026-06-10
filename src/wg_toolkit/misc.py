@@ -55,3 +55,10 @@ def get_unique_fname(base_name: str, extension: str = "png", time_prefix: bool =
         if verbose:
             print(f"# unique filename: {base_name}_{index:02d}.{extension}")
         return f"{base_name}_{index:02d}.{extension}"
+
+_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+
+if __name__ == "__main__":
+    print("\n### wg-toolkit.misc functions:")
+    for name in _MODULE_FUNCTIONS:
+        print(f"  {name}")

@@ -104,3 +104,10 @@ def load_df_from_csv_interactive(folder: str = "Results", suffix: str = "") -> p
         except ValueError:
             print_error(f"Invalid input: {input_str}. Please enter a valid number.")
             continue
+
+_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+
+if __name__ == "__main__":
+    print("\n### wg-toolkit.dataio functions:")
+    for name in _MODULE_FUNCTIONS:
+        print(f"  {name}")
