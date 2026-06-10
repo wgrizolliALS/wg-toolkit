@@ -1,9 +1,17 @@
 """
 This module defines physical and numerical constants used throughout the folib package.
+
+## Recommended Example and Usage:
+
+import wg_toolkit.constants as cte
+ph_EN = cte.HC/ (1*cte.ANGSTROM2M) # Photon Energy of 1 Angstrom photon
+
+
 """
 
 import numpy as np
 from scipy import constants as sp_constants
+
 
 # Define common engineering notation units for convenience
 ENG_UNITS = {  # Dictionary of common engineering units
@@ -66,3 +74,27 @@ SEC2DAY = 1 / DAY2SEC  # Conversion factor from seconds to days
 
 SDV2FWHM = 2 * np.sqrt(2 * np.log(2))
 FWHM2SDV = 1.0 / SDV2FWHM
+
+_MODULE_CONSTANTS = {k: v for k, v in globals().items() if k.isupper()}
+
+
+def show_all_constants():
+    """
+    Prints all constants defined in this module.
+    """
+    print("Physical and Numerical Constants:")
+    for name, value in _MODULE_CONSTANTS.items():
+        print(f"{name}:\t{value}")
+
+    print(
+        "\n## Recomended usage and example:\n\n"
+        "import wg_toolkit.constants as cte\n"
+        "ph_EN = cte.HC/ (1*cte.ANGSTROM2M) # Photon Energy of 1 Angstrom photon\n"
+    )
+
+
+if __name__ == "__main__":
+    """
+    Prints all constants defined in this module.
+    """
+    show_all_constants()
