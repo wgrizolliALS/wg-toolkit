@@ -1,16 +1,23 @@
 """
+# Description
+
 This module defines physical and numerical constants used throughout the folib package.
 
-## Recommended Example and Usage:
+# Recommended Example and Usage:
 
+```
 import wg_toolkit.constants as cte
 ph_EN = cte.HC/ (1*cte.ANGSTROM2M) # Photon Energy of 1 Angstrom photon
+print(f"Photon Energy of 1 Angstrom photon: {EngNumber(ph_EN, significant=5)} eV")
+```
 
 
 """
 
 import numpy as np
 from scipy import constants as sp_constants
+
+from engineering_notation import EngNumber
 
 
 # Define common engineering notation units for convenience
@@ -84,12 +91,17 @@ def show_all_constants():
     """
     print("Physical and Numerical Constants:")
     for name, value in _MODULE_CONSTANTS.items():
-        print(f"{name}:\t{value}")
+        try:
+            print(f"{name}:\t{EngNumber(value, significant=5)} {ENG_UNITS.get(name.split('_')[0], '')}")
+
+        except Exception:
+            print(f"{name}:\t{value}")
 
     print(
-        "\n## Recomended usage and example:\n\n"
+        "\n## Recommended usage and example:\n\n"
         "import wg_toolkit.constants as cte\n"
         "ph_EN = cte.HC/ (1*cte.ANGSTROM2M) # Photon Energy of 1 Angstrom photon\n"
+        'print(f"Photon Energy of 1 Angstrom photon: {EngNumber(ph_EN, significant=5)} eV")'
     )
 
 
