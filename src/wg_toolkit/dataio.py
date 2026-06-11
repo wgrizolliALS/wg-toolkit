@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 from wg_toolkit.logprint import print_done, print_error, print_warning
+from wg_toolkit.misc import datenow_str
 
 __all__ = [
     "local_df_to_csv",
@@ -10,8 +11,52 @@ __all__ = [
     "load_df_from_csv_interactive",
 ]
 
+def df_to_csv(
+    df: pd.DataFrame,
+    fname: str | Path = "",
+    folder: str = "./",
+    suffix: str = "",
+    timestamp_fname=True,
+    force_rewrite: bool = False,
+):
+    """
+    # Description
+    Save a DataFrame to CSV, writing df.attrs as comment lines in the header.
 
-def local_df_to_csv(
+    # Usage
+    ```python
+    from wg_toolkit.dataio import df_to_csv
+    df_to_csv(df, folder="Results", suffix="_mydata", timestamp_fname=True, force_rewrite=False)
+    ```
+
+    """
+
+    if fname:
+        f_path = Path(fname)
+    else:
+        if timestamp_fname:
+            f_path = Path(f"{folder}/{datenow_str()}{suffix}.csv")
+        else:
+            f_path = Path(f"{folder}/{suffix}.csv")
+
+    if f_path.exists() and not force_rewrite:
+        print_error(f"File {f_path} already exists. Please choose a different name or suffix. NOTHING DONE.")
+        raise FileExistsError(f"File {f_path} already exists. Please choose a different name or suffix.")
+    elif f_path.exists():
+        print_warning(f"File {f_path} already exists. It will be overwritten.")
+    else:
+        f_path.parent.mkdir(parents=True, exist_ok=True)
+        print_done(f"Saving data to {f_path}...")
+
+    with open(f_path, "w") as f:
+        for _attr, _value in df.attrs.items():
+            f.write(f"# {_attr}: {_value}\n")
+
+    df.to_csv(f_path, index=False, float_format="%.9f", mode="a")
+    print_done(f"Data saved to {f_path}")
+
+
+def local_df_to_csv(  # FIXME: Remove in future versions. Use df_to_csv instead.
     df: pd.DataFrame, folder: str = "Results", suffix: str = "", force_rewrite: bool = False
 ):
     """Save a DataFrame to CSV, writing df.attrs as comment lines in the header.
@@ -22,6 +67,11 @@ def local_df_to_csv(
         suffix: String appended to the filename before the .csv extension.
         force_rewrite: If True, overwrite an existing file without warning.
     """
+    print_warning(
+        "WARNING: wg_toolkit.df_to_csv is deprecated and will be removed in future versions. "
+        "Please use df_to_csv instead."
+    )
+
     fname = Path(f"{folder}/{df.attrs['Time and Date Label']}{suffix}.csv")
 
     if fname.exists() and not force_rewrite:
@@ -58,15 +108,15 @@ def load_df_from_csv(fname: str) -> pd.DataFrame:
     return df
 
 
-def load_df_from_csv_interactive(folder: str = "Results", suffix: str = "") -> pd.DataFrame:
+def load_df_from_csv_interactive(pathname=".\\*csv") -> pd.DataFrame | None:
     """Interactively select and load a CSV file from a folder.
 
     Lists matching files, prompts the user to select by index, or press Enter
     to load the most recently modified file.
 
     Args:
-        folder: Directory to search for CSV files.
-        suffix: Filter files by this suffix before the .csv extension.
+        pathname: Glob pattern to search for CSV files.
+        see https://docs.python.org/3/library/glob.html#glob.glob for info on pattern syntax.
 
     Returns:
         Loaded DataFrame with attributes restored.
@@ -74,11 +124,11 @@ def load_df_from_csv_interactive(folder: str = "Results", suffix: str = "") -> p
     import glob
 
     while True:
-        print("### Select File to Load:")
-        flist = glob.glob(f"{folder}/*{suffix}.csv")
+        print(f"### Select File to Load: {pathname}")
+        flist = glob.glob(pathname)
         if not flist:
-            print_error(f"No files found in {folder} with suffix '{suffix}'.")
-            raise FileNotFoundError(f"No files found in {folder} with suffix '{suffix}'.")
+            print_error(f"No files found matching '{pathname}'.")
+            return None
 
         for i, f in enumerate(flist):
             print(f"[{i:>2}]: {f}")
