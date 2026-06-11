@@ -8,11 +8,18 @@ version = "0.1.0"
 description = "Personal toolkit of reusable utilities"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "pandas",
-    "pyserial",
+    "numpy",
 ]
 
 [project.optional-dependencies]
+data     = ["pandas","scipy", "engineering-notation"]
+serial   = ["pyserial"]
+plotting = ["plotly"]
+all      = [
+    "wg-toolkit[data]",
+    "wg-toolkit[serial]",
+    "wg-toolkit[plotting]",
+]
 dev = [
     "nbstripout",
     "pytest",
