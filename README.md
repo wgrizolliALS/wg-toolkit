@@ -2,6 +2,8 @@
 
 Personal toolkit of reusable utilities — small, focused helpers used across lab software projects.
 
+Link to repository: https://github.com/wgrizolliALS/wg-toolkit.git
+
 ## Modules
 
 | Module | Description |
