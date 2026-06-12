@@ -3,7 +3,34 @@ import numpy as np
 __all__ = [
     "hdr",
     "hdr2d",
+    "nearest",
+    "argnearest",
 ]
+
+
+def _hdr_core(
+    flat_z: np.ndarray,
+    flat_weights: np.ndarray,
+    percentiles: tuple[float, ...] | list[float],
+) -> dict[float, float]:
+    """Core HDR computation shared by both 1D and 2D versions.
+
+    Args:
+        flat_z: 1D array of intensity/density values.
+        flat_weights: 1D array of weights corresponding to each value in flat_z.
+        percentiles: Target probability masses, values in (0, 1).
+
+    Returns:
+        Dictionary mapping each percentile to its lambda threshold.
+    """
+    z_norm = flat_z / (flat_z * flat_weights).sum()
+    order = np.argsort(z_norm)[::-1]
+    cumsum = np.cumsum(z_norm[order] * flat_weights[order])
+    thresholds: dict[float, float] = {}
+    for p in sorted(percentiles):
+        idx = min(np.searchsorted(cumsum, p), len(flat_z) - 1)
+        thresholds[p] = float(flat_z[order[idx]])
+    return thresholds
 
 
 def hdr(
@@ -71,18 +98,7 @@ def hdr(
     if any(not (0 < p < 1) for p in percentiles):
         raise ValueError(f"All percentiles must be in (0, 1); got {percentiles}.")
 
-    dx = np.gradient(x)
-    z_norm = z / (z * dx).sum()
-
-    order = np.argsort(z_norm)[::-1]
-    cumsum = np.cumsum(z_norm[order] * dx[order])
-
-    thresholds: dict[float, float] = {}
-    for p in sorted(percentiles):
-        idx = min(np.searchsorted(cumsum, p), len(z) - 1)
-        thresholds[p] = float(z[order[idx]])
-
-    return thresholds
+    return _hdr_core(z, np.gradient(x), percentiles)
 
 
 def hdr2d(
@@ -135,23 +151,65 @@ def hdr2d(
         raise ValueError(f"All percentiles must be in (0, 1); got {percentiles}.")
 
     dx = np.gradient(x)   # shape (N,)
-    dy = np.gradient(y)   # shape (M,)
-    cell_areas = np.outer(dy, dx)   # cell_areas[i, j] = dy[i] * dx[j]
+    dy = np.gradient(y)  # shape (M,)
+    cell_areas = np.outer(dy, dx)  # cell_areas[i, j] = dy[i] * dx[j]
 
-    z_norm = z / (z * cell_areas).sum()
+    return _hdr_core(z.ravel(), cell_areas.ravel(), percentiles)
 
-    flat_z      = z_norm.ravel()
-    flat_z_orig = z.ravel()
-    flat_a      = cell_areas.ravel()
-    order  = np.argsort(flat_z)[::-1]
-    cumsum = np.cumsum(flat_z[order] * flat_a[order])
 
-    thresholds: dict[float, float] = {}
-    for p in sorted(percentiles):
-        idx = min(np.searchsorted(cumsum, p), len(flat_z) - 1)
-        thresholds[p] = float(flat_z_orig[order[idx]])
+def nearest(arr: np.ndarray, value: float) -> float:
+    """
+    ## Return the element of arr nearest to value.
 
-    return thresholds
+    ## Args:
+        arr: Array of values to search. Any shape.
+        value: Target value.
+
+    ## Returns:
+        The element of arr closest to value.
+
+    ## See also:
+        wg-toolkit.analysis.argnearest: returns the index instead of the value.
+
+    ## Usage:
+        >>> nearest(np.array([0, 5, 10]), 6)
+        5.0
+        >>> nearest(np.array([[1, 2], [3, 4]]), 2.5)
+        2.0
+    """
+    return float(arr[argnearest(arr, value)])
+
+
+def argnearest(arr: np.ndarray, value: float, flat: bool = False) -> tuple[np.intp, ...] | np.intp:
+    """
+    ## Return the index of the element of arr nearest to value.
+
+    ## Args:
+        arr: Array of values to search. Any shape.
+        value: Target value.
+        flat: If False (default), return a multi-dimensional index tuple.
+              If True, return the scalar flat index into the raveled array.
+
+    ## Returns:
+        flat=False: tuple of np.intp indices, length == arr.ndim.
+                    Use directly as arr[argnearest(arr, v)].
+        flat=True:  scalar np.intp flat index into arr.ravel().
+
+    ## Notes:
+        Uses ravel() to find the flat index, then unravel_index to convert
+        back to the original array shape — works identically for 1D and ND.
+
+    ## Usage:
+        >>> argnearest(np.array([0, 5, 10]), 6)
+        (1,)
+        >>> argnearest(np.array([[1, 2], [3, 4]]), 2.5)
+        (0, 1)
+        >>> argnearest(np.array([[1, 2], [3, 4]]), 2.5, flat=True)
+        1
+    """
+    flat_arr = arr.ravel()  # ravel is a no-op for 1D; flattens ND without copy
+    flat_idx = np.argmin(np.abs(flat_arr - value))
+    return flat_idx if flat else np.unravel_index(flat_idx, arr.shape)  # scalar or ND tuple
 
 
 _MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
