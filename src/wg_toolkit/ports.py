@@ -17,11 +17,20 @@ DEBUG = False
 def list_serial_ports(verbose=False):
     """List all available serial ports on the system.
 
-    Note: lists all COM ports recognized by the OS regardless of whether a
-    device is actually connected or powered on.
+    Parameters
+    ----------
+    verbose : bool, optional
+        If True, print the list of available ports.
 
-    Returns:
+    Returns
+    -------
+    list
         List of ListPortInfo objects, or an empty list if none found.
+
+    Notes
+    -----
+    Lists all COM ports recognized by the OS regardless of whether a device
+    is actually connected or powered on.
     """
     ports = list(list_ports.comports())
     if ports:
@@ -51,9 +60,12 @@ def close_all_ports():
 def close_serial_connection(port: str, verbose: bool = True):
     """Attempt to close a serial connection on `port` if open.
 
-    Args:
-        port: Serial device path.
-        verbose: Enable informational printing about the close operation.
+    Parameters
+    ----------
+    port : str
+        Serial device path.
+    verbose : bool, optional
+        If True, enable informational printing about the close operation.
     """
     try:
         ser = serial.Serial(port)
@@ -77,21 +89,30 @@ def serial_query(
 ) -> str | None:
     """Send a command string to a serial device and read a single-line response.
 
-    This opens the serial port, writes `cmd`, optionally waits for data to become
-    available, then reads one line and returns it (or `None` on empty response
-    or error). Exceptions are caught and logged via `printc`.
+    Opens the serial port, writes cmd, optionally waits for data to become
+    available, then reads one line and returns it.
 
-    Args:
-        cmd: Command string to send (a newline is appended).
-        port: Serial device path (e.g. COM3 or /dev/ttyUSB0).
-        baudrate: Serial baud rate.
-        wait_serial: If True, poll until data is available or a timeout occurs.
-        verbose: Enable informational printing.
-        debug: Enable debug printing.
-        wait_before_read: Sleep interval between polls when `wait_serial` is True.
+    Parameters
+    ----------
+    cmd : str
+        Command string to send. A newline is appended automatically.
+    port : str
+        Serial device path (e.g. ``COM3`` or ``/dev/ttyUSB0``).
+    baudrate : int, optional
+        Serial baud rate.
+    wait_serial : bool, optional
+        If True, poll until data is available or a timeout occurs.
+    verbose : bool, optional
+        If True, enable informational printing.
+    debug : bool, optional
+        If True, enable debug printing.
+    wait_before_read : float, optional
+        Sleep interval in seconds between polls when wait_serial is True.
 
-    Returns:
-        The decoded response string, or `None` on empty response or error.
+    Returns
+    -------
+    str or None
+        The decoded response string, or None on empty response or error.
     """
     printc(f"[DEBUG] : Attempting to open serial port {port} at baudrate {baudrate}", verbose=debug)
 
@@ -150,21 +171,29 @@ def serial_batched(
 ) -> str | None:
     """Send a list of serial commands either batched or individually.
 
-    If any command contains a question mark `?` (a query) or `send_individually` is
-    True, commands are sent one-by-one with a small delay between them. When
-    safe, the list can be joined with `;` and sent as a single batched write
-    which may be faster for write-only sequences.
+    If any command contains a question mark (a query) or send_individually is
+    True, commands are sent one-by-one with a small delay between them.
+    Otherwise the list is joined with ``;`` and sent as a single batched write.
 
-    Args:
-        cmds: List of command strings to send.
-        port: Serial device path.
-        verbose: Enable informational printing.
-        debug: Enable debug printing.
-        send_individually: Force sending commands individually.
-        wait_between_cmds: Seconds to sleep between commands.
+    Parameters
+    ----------
+    cmds : list
+        List of command strings to send.
+    port : str
+        Serial device path.
+    verbose : bool, optional
+        If True, enable informational printing.
+    debug : bool, optional
+        If True, enable debug printing.
+    send_individually : bool, optional
+        If True, force sending commands individually regardless of content.
+    wait_between_cmds : float, optional
+        Seconds to sleep between commands.
 
-    Returns:
-        The last received response (or `None`).
+    Returns
+    -------
+    str or None
+        The last received response, or None.
     """
 
     res = None

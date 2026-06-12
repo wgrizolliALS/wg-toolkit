@@ -45,13 +45,21 @@ _color_ANSI_Escape_codes = {
 def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: bool = True, verbose: bool = True):
     """Print `s` to stdout wrapped in ANSI color/bold escape codes.
 
-    Args:
-        s: The input string to colorize.
-        color: Optional color name (red, green, blue, purple, cyan, gray, or default).
-        bold: If True, make the text bold.
-        end: String appended after the last character (default newline).
-        flush: Whether to flush the output buffer.
-        verbose: If False, suppress printing.
+    Parameters
+    ----------
+    s : str
+        The input string to colorize.
+    color : str, optional
+        Color name. One of: red, green, blue, purple, cyan, gray, or empty
+        string for the default terminal color.
+    bold : bool, optional
+        If True, make the text bold.
+    end : str, optional
+        String appended after the last character. Default is newline.
+    flush : bool, optional
+        Whether to flush the output buffer.
+    verbose : bool, optional
+        If False, suppress printing.
     """
 
     if not verbose:

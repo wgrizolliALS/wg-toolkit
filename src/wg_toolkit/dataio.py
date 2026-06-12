@@ -19,16 +19,32 @@ def df_to_csv(
     timestamp_fname=True,
     force_rewrite: bool = False,
 ):
-    """
-    # Description
-    Save a DataFrame to CSV, writing df.attrs as comment lines in the header.
+    """Save a DataFrame to CSV, writing df.attrs as comment lines in the header.
 
-    # Usage
-    ```python
-    from wg_toolkit.dataio import df_to_csv
-    df_to_csv(df, folder="Results", suffix="_mydata", timestamp_fname=True, force_rewrite=False)
-    ```
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame to save.
+    fname : str or Path, optional
+        Full file path. If empty, the path is constructed from folder, suffix,
+        and timestamp.
+    folder : str, optional
+        Output directory. Used when fname is not provided.
+    suffix : str, optional
+        String appended to the filename before the .csv extension.
+    timestamp_fname : bool, optional
+        If True, prepend the current date and time to the filename.
+    force_rewrite : bool, optional
+        If True, overwrite an existing file without raising an error.
 
+    Raises
+    ------
+    FileExistsError
+        If the file already exists and force_rewrite is False.
+
+    Examples
+    --------
+    >>> df_to_csv(df, folder="Results", suffix="_mydata", timestamp_fname=True)
     """
 
     if fname:
@@ -61,11 +77,24 @@ def local_df_to_csv(  # FIXME: Remove in future versions. Use df_to_csv instead.
 ):
     """Save a DataFrame to CSV, writing df.attrs as comment lines in the header.
 
-    Args:
-        df: DataFrame to save. Must have a 'Time and Date Label' attribute.
-        folder: Output directory.
-        suffix: String appended to the filename before the .csv extension.
-        force_rewrite: If True, overwrite an existing file without warning.
+    .. deprecated::
+        Use :func:`df_to_csv` instead.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame to save. Must have a ``'Time and Date Label'`` attribute.
+    folder : str, optional
+        Output directory.
+    suffix : str, optional
+        String appended to the filename before the .csv extension.
+    force_rewrite : bool, optional
+        If True, overwrite an existing file without warning.
+
+    Raises
+    ------
+    FileExistsError
+        If the file already exists and force_rewrite is False.
     """
     print_warning(
         "WARNING: wg_toolkit.df_to_csv is deprecated and will be removed in future versions. "
@@ -93,10 +122,14 @@ def local_df_to_csv(  # FIXME: Remove in future versions. Use df_to_csv instead.
 def load_df_from_csv(fname: str) -> pd.DataFrame:
     """Load a DataFrame from CSV, restoring df.attrs from comment lines.
 
-    Args:
-        fname: Path to the CSV file.
+    Parameters
+    ----------
+    fname : str
+        Path to the CSV file.
 
-    Returns:
+    Returns
+    -------
+    pd.DataFrame
         DataFrame with attributes restored from comment lines.
     """
     df = pd.read_csv(fname, comment="#")
@@ -114,12 +147,16 @@ def load_df_from_csv_interactive(pathname=".\\*csv") -> pd.DataFrame | None:
     Lists matching files, prompts the user to select by index, or press Enter
     to load the most recently modified file.
 
-    Args:
-        pathname: Glob pattern to search for CSV files.
-        see https://docs.python.org/3/library/glob.html#glob.glob for info on pattern syntax.
+    Parameters
+    ----------
+    pathname : str, optional
+        Glob pattern to search for CSV files. See
+        https://docs.python.org/3/library/glob.html#glob.glob for pattern syntax.
 
-    Returns:
-        Loaded DataFrame with attributes restored.
+    Returns
+    -------
+    pd.DataFrame or None
+        Loaded DataFrame with attributes restored, or None if no files found.
     """
     import glob
 

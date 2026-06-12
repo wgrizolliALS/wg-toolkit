@@ -86,9 +86,7 @@ _MODULE_CONSTANTS = {k: v for k, v in locals().items() if not callable(v) and k.
 
 
 def show_all_constants():
-    """
-    Prints all constants defined in this module.
-    """
+    """Print all constants defined in this module."""
     print("\n\n### Physical and Numerical Constants:\n")
     for name, value in _MODULE_CONSTANTS.items():
         try:

@@ -31,14 +31,21 @@ def timenow_str() -> str:
 def get_unique_fname(base_name: str, extension: str = "png", time_prefix: bool = True, verbose: bool = True) -> str:
     """Return a unique filename by appending an index to the base name.
 
-    Args:
-        base_name (str): The base name of the file (without extension).
-        extension (str, optional): The file extension (default is "png").
-        time_prefix (bool, optional): If True, prepend the current date and time to the filename (default is True).
-        verbose (bool, optional): If True, print the unique filename (default is True).
+    Parameters
+    ----------
+    base_name : str
+        The base name of the file (without extension).
+    extension : str, optional
+        The file extension. Default is ``"png"``.
+    time_prefix : bool, optional
+        If True, prepend the current date and time to the filename.
+    verbose : bool, optional
+        If True, print the unique filename.
 
-    Returns:
-        str: A unique filename in the format "{base_name}_{index:02d}.{extension}".
+    Returns
+    -------
+    str
+        A unique filename in the format ``"{base_name}_{index:02d}.{extension}"``.
     """
 
     os.makedirs(base_name.rsplit("\\", 1)[0], exist_ok=True)
