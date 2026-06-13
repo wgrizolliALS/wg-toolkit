@@ -172,7 +172,7 @@ def plot_profiles_widget(
             )
         )
 
-    _active_figures.append(fig)
+    _active_figures.append(fig)  # type: ignore
 
     fig.update_layout(
         font=dict(family="Georgia", size=14, color="#3B3B3B"),
@@ -358,8 +358,8 @@ def plot_profiles_widget(
             if profile_percentile is not None:
                 _thresh_x = hdr(x, z[yi, :], profile_percentile)
                 _thresh_y = hdr(y, z[:, xi], profile_percentile)
-                _x_prof_fill_trace.y = [v if v >= _thresh_x else None for v in z[yi, :].tolist()]
-                _y_prof_fill_trace.x = [v if v >= _thresh_y else None for v in z[:, xi].tolist()]
+                _x_prof_fill_trace.y = [v if v >= _thresh_x else None for v in z[yi, :].tolist()]  # type: ignore
+                _y_prof_fill_trace.x = [v if v >= _thresh_y else None for v in z[:, xi].tolist()]  # type: ignore
 
                 _mask_x = z[yi, :] >= _thresh_x
                 _mask_y = z[:, xi] >= _thresh_y
@@ -388,8 +388,8 @@ def plot_profiles_widget(
                         dict(
                             x=_ann_xr,
                             y=_ann_yr,
-                            xref=_y_prof_trace.xaxis,
-                            yref=_y_prof_trace.yaxis,
+                            xref=_y_prof_trace.xaxis,  # type: ignore
+                            yref=_y_prof_trace.yaxis,  # type: ignore
                             text=f"Profile FWHM<br>y={_fwhm_y_profile:.3f} {unitsy}",
                             showarrow=False,
                             font=dict(size=12),
@@ -397,8 +397,8 @@ def plot_profiles_widget(
                         dict(
                             x=_ann_x,
                             y=_ann_y,
-                            xref=_x_prof_trace.xaxis,
-                            yref=_x_prof_trace.yaxis,
+                            xref=_x_prof_trace.xaxis,  # type: ignore
+                            yref=_x_prof_trace.yaxis,  # type: ignore
                             text=f"Profile FWHM<br>x={_fwhm_x_profile:.3f} {unitsx}",
                             showarrow=False,
                             font=dict(size=12),
@@ -409,8 +409,8 @@ def plot_profiles_widget(
                         dict(
                             x=_ann_xr,
                             y=_ann_yr,
-                            xref=_y_prof_trace.xaxis,
-                            yref=_y_prof_trace.yaxis,
+                            xref=_y_prof_trace.xaxis,  # type: ignore
+                            yref=_y_prof_trace.yaxis,  # type: ignore
                             text=f"{profile_percentile * 100:.1f}th percentile<br>width y={_width_y:.3f} {unitsy}",
                             showarrow=False,
                             font=dict(size=12),
@@ -418,8 +418,8 @@ def plot_profiles_widget(
                         dict(
                             x=_ann_x,
                             y=_ann_y,
-                            xref=_x_prof_trace.xaxis,
-                            yref=_x_prof_trace.yaxis,
+                            xref=_x_prof_trace.xaxis,  # type: ignore
+                            yref=_x_prof_trace.yaxis,  # type: ignore
                             text=f"{profile_percentile * 100:.1f}th percentile<br>width x={_width_x:.3f} {unitsx}",
                             showarrow=False,
                             font=dict(size=12),
@@ -465,7 +465,7 @@ def plot_profiles_widget(
         return fig, state
 
     for trace in fig.data:
-        trace.on_click(_on_heatmap_click)
+        trace.on_click(_on_heatmap_click)  # type: ignore
 
     return fig, state
 
