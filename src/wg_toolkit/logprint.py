@@ -16,6 +16,11 @@ print_error,
 print_done,
 print_success,
 
+## Recomended use
+```
+from wg_toolkit.logprint import print_log, print_info, print_warning, print_error
+
+
 """
 
 from wg_toolkit.misc import timenow

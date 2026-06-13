@@ -78,7 +78,9 @@ uv run python -c "import wg_toolkit; print('wg-toolkit installed successfully!')
 Alternativelly, run the script located at `scripts\00_check_installation.py` using your favorite python IDE.
 
 
-## Usage
+## Recomend Usage
+
+These are a few recomended ways of using the toolkit.
 
 ```python
 from wg_toolkit.logprint import print_info, print_done, print_error
@@ -88,4 +90,9 @@ from wg_toolkit.analysis import hdr, hdr2d
 
 # or import everything from the top level
 from wg_toolkit import print_info, load_df_from_csv, hdr, hdr2d
+
+# or alternativelly
+import wg_toolkit.constants as cte
+
+
 ```

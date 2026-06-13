@@ -11,8 +11,8 @@ __all__ = [
 def _hdr_core(
     flat_z: np.ndarray,
     flat_weights: np.ndarray,
-    percentiles: tuple[float, ...] | list[float],
-) -> dict[float, float]:
+    percentile: float,
+) -> float:
     """Core HDR computation shared by hdr and hdr2d.
 
     Parameters
@@ -21,29 +21,26 @@ def _hdr_core(
         1D array of intensity/density values.
     flat_weights : np.ndarray
         1D array of integration weights for each element of flat_z.
-    percentiles : list[float] or tuple[float, ...]
-        Target probability masses, values in (0, 1). Must be pre-validated.
+    percentile : float
+        Target probability mass, value in (0, 1). Must be pre-validated.
 
     Returns
     -------
-    dict[float, float]
-        Dictionary mapping each percentile to its lambda threshold.
+    float
+        Lambda threshold corresponding to the specified percentile.
     """
     z_norm = flat_z / (flat_z * flat_weights).sum()
     order = np.argsort(z_norm)[::-1]
     cumsum = np.cumsum(z_norm[order] * flat_weights[order])
-    thresholds: dict[float, float] = {}
-    for p in sorted(percentiles):
-        idx = min(np.searchsorted(cumsum, p), len(flat_z) - 1)
-        thresholds[p] = float(flat_z[order[idx]])
-    return thresholds
+    idx = min(np.searchsorted(cumsum, percentile), len(flat_z) - 1)
+    return float(flat_z[order[idx]])
 
 
 def hdr(
     x: np.ndarray,
     z: np.ndarray,
-    percentiles: tuple[float, ...] | list[float] | float = (0.25, 0.50, 0.75),
-) -> dict[float, float]:
+    percentile: float = 0.5,
+) -> float:
     """Compute 1D Highest Density Region thresholds.
 
     For each percentile p, returns the density level lambda such that the
@@ -56,20 +53,20 @@ def hdr(
         1D array of x-coordinates, length N. Need not be uniformly spaced.
     z : np.ndarray
         1D array of intensity/density values, shape (N,). Need not be normalized.
-    percentiles : float or list[float] or tuple[float, ...]
-        Target probability masses, values in (0, 1). Default is (0.25, 0.50, 0.75).
+    percentile : float
+        Target probability mass, value in (0, 1). Default is 0.5.
 
     Returns
     -------
-    dict[float, float]
-        Dictionary mapping each percentile to its lambda threshold.
+    float
+        Lambda threshold corresponding to the specified percentile.
 
     Raises
     ------
     ValueError
         If z.shape != (len(x),).
     ValueError
-        If any percentile is not in the open interval (0, 1).
+        If percentile is not in the open interval (0, 1).
 
     See Also
     --------
@@ -91,28 +88,26 @@ def hdr(
     >>> x = np.linspace(-3, 3, 500)
     >>> z = np.exp(-x**2 / 2)
     >>> hdr(x, z, 0.50)
-    {0.5: ...}
+    0.5
     """
-    if isinstance(percentiles, (float, int)):
-        percentiles = [percentiles]
 
     x = np.asarray(x, dtype=float)
     z = np.asarray(z, dtype=float)
 
     if z.shape != (len(x),):
         raise ValueError(f"z.shape must be (len(x),) = ({len(x)},); got {z.shape}.")
-    if any(not (0 < p < 1) for p in percentiles):
-        raise ValueError(f"All percentiles must be in (0, 1); got {percentiles}.")
+    if not (0 < percentile < 1):
+        raise ValueError(f"Percentile must be in (0, 1); got {percentile}.")
 
-    return _hdr_core(z, np.gradient(x), percentiles)
+    return _hdr_core(z, np.gradient(x), percentile)
 
 
 def hdr2d(
     x: np.ndarray,
     y: np.ndarray,
     z: np.ndarray,
-    percentiles: tuple[float, ...] | list[float] | float = (0.25, 0.50, 0.75),
-) -> dict[float, float]:
+    percentile: float = 0.5,
+) -> float:
     """Compute 2D Highest Density Region thresholds on a structured grid.
 
     For each percentile p, returns the density level lambda such that the
@@ -129,13 +124,13 @@ def hdr2d(
     z : np.ndarray
         2D array of intensity/density values, shape (M, N). Need not be
         normalized. Assumes z[i, j] corresponds to (x[j], y[i]).
-    percentiles : float or list[float] or tuple[float, ...]
-        Target probability masses, values in (0, 1). Default is (0.25, 0.50, 0.75).
+    percentile : float
+        Target probability mass, value in (0, 1). Default is 0.5.
 
     Returns
     -------
-    dict[float, float]
-        Dictionary mapping each percentile to its lambda threshold.
+    float
+        Lambda threshold corresponding to the specified percentile.
 
     Raises
     ------
@@ -165,10 +160,9 @@ def hdr2d(
     >>> xx, yy = np.meshgrid(x, y)
     >>> z = np.exp(-(xx**2 + yy**2) / 2)
     >>> hdr2d(x, y, z, 0.50)
-    {0.5: ...}
+    0.5
     """
-    if isinstance(percentiles, (float, int)):
-        percentiles = [percentiles]
+
 
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -178,14 +172,14 @@ def hdr2d(
         raise ValueError(
             f"z.shape must be (len(y), len(x)) = ({len(y)}, {len(x)}); got {z.shape}."
         )
-    if any(not (0 < p < 1) for p in percentiles):
-        raise ValueError(f"All percentiles must be in (0, 1); got {percentiles}.")
+    if not (0 < percentile < 1):
+        raise ValueError(f"Percentile must be in (0, 1); got {percentile}.")
 
     dx = np.gradient(x)  # shape (N,)
     dy = np.gradient(y)  # shape (M,)
     cell_areas = np.outer(dy, dx)  # cell_areas[i, j] = dy[i] * dx[j]
 
-    return _hdr_core(z.ravel(), cell_areas.ravel(), percentiles)
+    return _hdr_core(z.ravel(), cell_areas.ravel(), percentile)
 
 
 def argnearest(arr: np.ndarray, value: float, flat: bool = False) -> tuple[np.intp, ...] | np.intp:
