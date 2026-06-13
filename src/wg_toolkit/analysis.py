@@ -1,10 +1,14 @@
 import numpy as np
 
+from wg_toolkit.constants import SDV2FWHM
+
 __all__ = [
     "hdr",
     "hdr2d",
     "nearest",
     "argnearest",
+    "variance",
+    "fwhm",
 ]
 
 
@@ -253,6 +257,49 @@ def nearest(arr: np.ndarray, value: float) -> float:
     2.0
     """
     return float(arr[argnearest(arr, value)])
+
+
+def variance(x_arr: np.ndarray, w_arr: np.ndarray) -> float:
+    """Calculate the weighted variance of a distribution.
+
+    Uses explicit weighted variance instead of ``numpy.cov`` to support
+    negative weights.
+
+    Parameters
+    ----------
+    x_arr : np.ndarray
+        1D array of coordinates (x or y).
+    w_arr : np.ndarray
+        1D array of weights (intensity values) corresponding to ``x_arr``.
+
+    Returns
+    -------
+    float
+        Weighted variance in the same units as ``x_arr`` squared.
+    """
+    mu = np.average(x_arr, weights=w_arr)
+    return float(np.average((x_arr - mu) ** 2, weights=w_arr))
+
+
+def fwhm(x_arr: np.ndarray, w_arr: np.ndarray) -> float:
+    """Calculate FWHM from weighted variance assuming a Gaussian distribution.
+
+    Uses the relation ``FWHM = 2 * sqrt(2 * ln(2)) * sigma`` where
+    ``sigma**2`` is the weighted variance of the distribution.
+
+    Parameters
+    ----------
+    x_arr : np.ndarray
+        1D array of coordinates (x or y).
+    w_arr : np.ndarray
+        1D array of weights (intensity values) corresponding to ``x_arr``.
+
+    Returns
+    -------
+    float
+        FWHM in the same units as ``x_arr``.
+    """
+    return SDV2FWHM * np.sqrt(variance(x_arr, w_arr))
 
 
 _MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
