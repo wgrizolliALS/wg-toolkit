@@ -46,8 +46,8 @@ VACUUM_PERMITTIVITY = sp_constants.epsilon_0  # Vacuum permittivity (F/m)
 VACUUM_PERMEABILITY = sp_constants.mu_0  # Vacuum permeability (N/A^2)
 
 # Conversion factors for angles
-RAD2DEG = np.rad2deg(1)  # Conversion factor from radians to degrees
-DEG2RAD = np.deg2rad(1)  # Conversion factor from degrees to radians
+RAD2DEG = float(np.rad2deg(1))  # Conversion factor from radians to degrees
+DEG2RAD = float(np.deg2rad(1))  # Conversion factor from degrees to radians
 RAD_TO_PI_RAD = 1 / np.pi  # Converts radians to units of pi (e.g., 3.14 rad -> 1.0)
 PI_RAD_TO_RAD = np.pi  # Converts units of pi back to radians (e.g., 1.0 -> 3.14 rad)
 
@@ -79,24 +79,37 @@ SEC2DAY = 1 / DAY2SEC  # Conversion factor from seconds to days
 
 # Others
 
-SDV2FWHM = 2 * np.sqrt(2 * np.log(2))
+SDV2FWHM = float(2 * np.sqrt(2 * np.log(2)))
 FWHM2SDV = 1.0 / SDV2FWHM
 
 _MODULE_CONSTANTS = {k: v for k, v in locals().items() if not callable(v) and k.isupper()}
 
 
+from tabulate import tabulate  # pip install tabulate
+
+
 def show_all_constants():
-    """Print all constants defined in this module."""
+    """Print all constants defined in this module in a tabular layout."""
     print("\n\n### Physical and Numerical Constants:\n")
+
+    rows = []
     for name, value in _MODULE_CONSTANTS.items():
         try:
-            print(f"{name}:\t{EngNumber(value, significant=5)} {ENG_UNITS.get(name.split('_')[0], '')}")
-
+            # – Convert EngNumber to plain str ahead of Tabulate – #
+            val_str = f"{value:.5g}"
+            val_str_eng = str(EngNumber(value, significant=5))
+            rows.append([name, type(value).__name__, val_str, val_str_eng])
         except Exception:
-            print(f"{name}:\t{value}")
+            rows.append([name, type(value).__name__, str(value), "N/A"])
+
+    # You’re free to tweak the table format; I’ll keep it “plain”
+    print(
+        tabulate(
+            rows, headers=["Name", "Type", "Value", "EngNumber"], maxcolwidths=[20, 10, 10, 10], tablefmt="fancy_grid"
+        )
+    )
 
     print("")
-
 
 if __name__ == "__main__":
     """
