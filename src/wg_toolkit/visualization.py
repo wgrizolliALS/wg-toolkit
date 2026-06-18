@@ -13,6 +13,37 @@ __all__ = [
 
 _active_figures: list[go.FigureWidget] = []
 
+def create_colorscale(cmap_name, over_color, under_color):
+    """
+    Create a Plotly colorscale with custom over/under colors.
+
+    Parameters:
+    -----------
+    cmap_name : str
+        Plotly colorscale name (e.g., 'Viridis', 'Plasma', 'Blues')
+    over_color : str
+        Color for values above the maximum (e.g., 'pink', 'rgb(255, 0, 0)'). Note that
+        you can also use 'rgba(255, 255, 255, 0)' for a transparent color.
+    under_color : str
+        Color for values below the minimum (e.g., 'white', 'rgb(255, 255, 255)')
+
+    Returns:
+    --------
+    list
+        Plotly colorscale as a list of [position, color] pairs
+    """
+    import plotly.express as px
+
+    plotly_cmap = px.colors.sequential.__dict__[cmap_name]
+    n = len(plotly_cmap)
+    eps = 0.01
+    colorscale = (
+        [[0.0, under_color]]
+        + [[eps + (1 - 2 * eps) * i / (n - 1), plotly_cmap[i]] for i in range(n)]
+        + [[1.0, over_color]]
+    )
+    return colorscale
+
 
 def plot_profiles_widget(
     x: np.ndarray,
@@ -29,16 +60,20 @@ def plot_profiles_widget(
     yo_for_profile: float | None = None,
     center_at_cm: bool = False,
     profile_fwhm: bool = False,
-    profile_percentile: float | None = 0.7615,
-    contour_percentiles: list = [0.50],
+    profile_coverage: float | None = 0.7615,
+    contour_coverages: list = [0.50],
     color_for_contours=["#FF10F0", "#00FFFF", "#00FF00"],
     colorscale: str | list = "Magma",
+    zmax_coverage: float | None = None,
+    zmin_coverage: float | None = None,
+    over_color: str = "magenta",
+    under_color: str = "rgba(255, 255, 255, 0)",
     calc_stats_contours: bool = False,
 ):
     """Create an interactive Plotly figure with a heatmap and linked profiles.
 
     Displays ``z(x, y)`` as a heatmap with two profiles that update on click.
-    Optionally adds contour lines at specified percentiles and calculates
+    Optionally adds contour lines at specified coverages and calculates
     area/centroid stats.
 
     Parameters
@@ -71,28 +106,31 @@ def plot_profiles_widget(
         ``xo_for_profile`` if None and ``xo_for_profile`` is set.
     center_at_cm: bool, optional
         If True, automatically centers profiles at the centroid of the 50th
-        percentile HDR region. Overrides ``xo_for_profile`` and
+        coverage HDR region. Overrides ``xo_for_profile`` and
         ``yo_for_profile``. Default ``False``.
     profile_fwhm : bool, optional
-        If True, annotations show FWHM instead of percentile width and forces
-        ``profile_percentile=0.7615``. Default ``False``.
-    profile_percentile : float or None, optional
-        Percentile (0–1) used for the filled profile region and width
+        If True, annotations show FWHM instead of coverage width and forces
+        ``profile_coverage=0.7615``. Default ``False``.
+    profile_coverage : float | None, optional
+        coverage (0-1) used for the filled profile region and width
         annotation. Pass None to disable. Default ``0.7615``.
-    contour_percentiles : list, optional
-        List of percentiles (0–1) for HDR contour lines on the heatmap.
+    contour_coverages : list, optional
+        List of coverages (0-1) for HDR contour lines on the heatmap.
         Default ``[0.50]``.
     color_for_contours : list, optional
-        Hex color strings for contour lines, one per percentile (cycles if
+        Hex color strings for contour lines, one per coverage (cycles if
         shorter). Default ``["#FF10F0", "#00FFFF", "#00FF00"]``.
     colorscale : str or list, optional
         Plotly colorscale for the heatmap. Default ``"Magma"``.
         Other options include ``"Viridis"``, ``"Plasma"``, ``"Cividis"``, ``"Inferno"``,
         ``"Jet"``, ``"Hot"``, ``"Rainbow"``, ``"Spectral"``, ``"RdBu"``, ``"RdGy"``, ``"Greys"``.
         See https://plotly.com/python/builtin-colorscales/#builtin-sequential-color-scales
+    zmax_coverage, zmin_coverage : float | None, optional
+        If set, the heatmap's zmax and zmin are set to the HDR thresholds at these coverages, respectively. Pass None to disable. Default ``None``.
+        *Note* that it is related to the maximum coverage. `zmax_coverage=0.1` means we saturate the top 10% of values to the same color.  `zmin_coverage=0.9` means we saturate the bottom 10% of values to the same color.
     calc_stats_contours : bool, optional
         If True, prints area, diameter, centroid, and projection widths for
-        each contour percentile and stores them in the returned state dict.
+        each contour coverage and stores them in the returned state dict.
         Default ``False``.
 
     Returns
@@ -101,7 +139,7 @@ def plot_profiles_widget(
         The interactive Plotly figure.
     state : dict
         Live state dict updated on each click. Contains ``'inputs'`` always;
-        ``'1d-profile-stat'`` after a click when ``profile_percentile`` is set;
+        ``'1d-profile-stat'`` after a click when ``profile_coverage`` is set;
         ``'2D-stat'`` when ``calc_stats_contours=True``.
 
     Example
@@ -156,7 +194,7 @@ def plot_profiles_widget(
         "yo_for_profile": yo_for_profile,
         "center_at_cm": center_at_cm,
         "interactive": interactive,
-        "contour_percentiles": contour_percentiles,
+        "contour_coverages": contour_coverages,
         "color_for_contours": color_for_contours,
         "calc_stats_contours": calc_stats_contours,
     }
@@ -172,7 +210,7 @@ def plot_profiles_widget(
         raise ValueError("Length of x and y must match dimensions of z")
 
     if center_at_cm:
-        mask = z >= hdr2d(x, y, z, 0.5)
+        mask = z >= hdr2d(z, x=x, y=y, coverage=0.5)
         z_masked = z * mask
         proj_x = z_masked.sum(axis=0)
         proj_y = z_masked.sum(axis=1)
@@ -234,12 +272,24 @@ def plot_profiles_widget(
         title=dict(text="Intensity", side="top"),
     )
 
+    _custom_cmap = create_colorscale(colorscale, over_color, under_color)
+    _zmax = None if zmax_coverage is None else hdr(z.ravel(), coverage=zmax_coverage)
+    _zmin = None if zmin_coverage is None else hdr(z.ravel(), coverage=zmin_coverage)
+
+    print_log(
+        f"[DEBUG] Using colorscale={colorscale} with zmin={_zmin} and zmax={_zmax} based on coverages "
+        f"{zmin_coverage} and {zmax_coverage}."
+    )
     heatmap = go.Heatmap(
         x=xl,
         y=yl,
         z=zl,
-        colorscale=colorscale,
+        colorscale=_custom_cmap,
         colorbar=_cbar,
+        # cmin=_zmin,
+        # cmax=_zmax,
+        zmin=_zmin,
+        zmax=_zmax,
         zsmooth=False,
         hovertemplate="x: %{x:.3f}<br>y: %{y:.3f}<br>z: %{z:.4f}<extra></extra>",
     )
@@ -269,10 +319,10 @@ def plot_profiles_widget(
     _y_prof_trace = fig.data[-1]
 
     if profile_fwhm:
-        profile_percentile = 0.7615
-        print_warning("Using profile_fwhm=True. This forces profile_percentile=0.7615.")
+        profile_coverage = 0.7615
+        print_warning("Using profile_fwhm=True. This forces profile_coverage=0.7615.")
 
-    if profile_percentile is not None:
+    if profile_coverage is not None:
         _fc = "rgba({},{},{},0.5)".format(*pc.hex_to_rgb("#FF404092"))
         x_prof_fill = go.Scatter(
             x=xl,
@@ -281,7 +331,7 @@ def plot_profiles_widget(
             fill="tozeroy",
             fillcolor=_fc,
             showlegend=True,
-            name=f"Line Profile {profile_percentile * 100:.2f}th Percentile",
+            name=f"Line Profile {profile_coverage * 100:.2f}% coverage",
         )
         y_prof_fill = go.Scatter(
             x=[None] * ny,
@@ -312,13 +362,13 @@ def plot_profiles_widget(
 
         step_for_clines = max(1, min(nx, ny) // 100)
         _colors = list(color_for_contours)
-        if len(_colors) < len(contour_percentiles):
-            _colors *= len(contour_percentiles)
+        if len(_colors) < len(contour_coverages):
+            _colors *= len(contour_coverages)
 
         state["2D-stat"] = {}
 
-        for _pct, _lc in zip(contour_percentiles, _colors):
-            _z_thresh = hdr2d(x, y, z, _pct)
+        for _covrg, _lc in zip(contour_coverages, _colors):
+            _z_thresh = hdr2d(z, x=x, y=y, coverage=_covrg)
             fig.add_trace(
                 go.Contour(
                     x=x[::step_for_clines].tolist(),
@@ -327,7 +377,7 @@ def plot_profiles_widget(
                     showscale=False,
                     showlegend=True,
                     hoverinfo="skip",
-                    name=f"Area {int(_pct * 100)}th Percentile",
+                    name=f"Area {int(_covrg * 100)}% coverage",
                     contours=dict(coloring="none", start=_z_thresh, end=_z_thresh),
                     line=dict(color=_lc, width=2, dash="dash"),
                 ),
@@ -347,11 +397,11 @@ def plot_profiles_widget(
             diamter_x = np.ptp(x[mask.any(axis=0)]) if np.any(mask.any(axis=0)) else 0.0
             diamter_y = np.ptp(y[mask.any(axis=1)]) if np.any(mask.any(axis=1)) else 0.0
             proj_x, proj_y = z.max(axis=0), z.max(axis=1)
-            integrated_width_x = np.ptp(x[proj_x >= hdr(x, proj_x, _pct)])
-            integrated_width_y = np.ptp(y[proj_y >= hdr(y, proj_y, _pct)])
+            integrated_width_x = np.ptp(x[proj_x >= hdr(proj_x, x=x, coverage=_covrg)])
+            integrated_width_y = np.ptp(y[proj_y >= hdr(proj_y, x=y, coverage=_covrg)])
 
             print_info(
-                f"\n\t*** {int(_pct * 100)}th Percentile:\n"
+                f"\n\t*** {int(_covrg * 100)}% coverage:\n"
                 f"\t\t- Area = {area:.3f} {area_units}\n"
                 f"\t\t- Diameter = {xlabel}: {diamter_x:.3f} {unitsx}, {ylabel}: {diamter_y:.3f} {unitsy}\n"
                 f"\t\t- Centroid = {xlabel}: {center_mass_x:.3f} {unitsx}, {ylabel}: {center_mass_y:.3f} {unitsy}\n"
@@ -360,7 +410,7 @@ def plot_profiles_widget(
                 f"\t\t\t* {ylabel}: {integrated_width_y:.3f} {unitsy}\n"
             )
 
-            state["2D-stat"][f"p{_pct:.4g}"] = {
+            state["2D-stat"][f"p{_covrg:.4g}"] = {
                 "area": area,
                 "area_units": area_units,
                 "diameter_x": diamter_x,
@@ -400,9 +450,9 @@ def plot_profiles_widget(
         with fig.batch_update():
             _x_prof_trace.y = z[yi, :].tolist()
             _y_prof_trace.x = z[:, xi].tolist()
-            if profile_percentile is not None:
-                _thresh_x = hdr(x, z[yi, :], profile_percentile)
-                _thresh_y = hdr(y, z[:, xi], profile_percentile)
+            if profile_coverage is not None:
+                _thresh_x = hdr(z[yi, :], x=x, coverage=profile_coverage)
+                _thresh_y = hdr(z[:, xi], x=y, coverage=profile_coverage)
                 _x_prof_fill_trace.y = [v if v >= _thresh_x else None for v in z[yi, :].tolist()]  # type: ignore
                 _y_prof_fill_trace.x = [v if v >= _thresh_y else None for v in z[:, xi].tolist()]  # type: ignore
 
@@ -415,7 +465,7 @@ def plot_profiles_widget(
                 _fwhm_y_profile = fwhm(y, z[:, xi])
 
                 state["1d-profile-stat"] = {
-                    "percentile": profile_percentile,
+                    "coverage": profile_coverage,
                     "width_x": _width_x,
                     "width_y": _width_y,
                     "size_units": (unitsx, unitsy),
@@ -456,7 +506,7 @@ def plot_profiles_widget(
                             y=_ann_yr,
                             xref=_y_prof_trace.xaxis,  # type: ignore
                             yref=_y_prof_trace.yaxis,  # type: ignore
-                            text=f"{profile_percentile * 100:.1f}th percentile<br>width y={_width_y:.3f} {unitsy}",
+                            text=f"{profile_coverage * 100:.1f}% coverage<br>width y={_width_y:.3f} {unitsy}",
                             showarrow=False,
                             font=dict(size=12),
                         ),
@@ -465,7 +515,7 @@ def plot_profiles_widget(
                             y=_ann_y,
                             xref=_x_prof_trace.xaxis,  # type: ignore
                             yref=_x_prof_trace.yaxis,  # type: ignore
-                            text=f"{profile_percentile * 100:.1f}th percentile<br>width x={_width_x:.3f} {unitsx}",
+                            text=f"{profile_coverage * 100:.1f}% coverage<br>width x={_width_x:.3f} {unitsx}",
                             showarrow=False,
                             font=dict(size=12),
                         ),
@@ -543,7 +593,9 @@ def _example_usage(interactive=True):
     x = np.linspace(-5, 5, 1000)
     y = np.linspace(-5, 5, 800)
     X, Y = np.meshgrid(x, y)
-    Z = np.exp(-(X**2 + Y**2) / (2 * 1.0**2)) + 0.1 * np.random.rand(*X.shape)
+    Z = np.exp(-(X**2 + Y**2) / (2 * 1.0**2))
+    Z = Z / Z.max() * 100  # normalize to 1.0 max
+    Z += 1 * np.random.rand(*X.shape)
 
     fig, state = plot_profiles_widget(
         x,
@@ -558,6 +610,10 @@ def _example_usage(interactive=True):
         xo_for_profile=0.0,
         yo_for_profile=0.0,
         interactive=interactive,
+        zmax_coverage=0.05,
+        zmin_coverage=0.90,
+        over_color="magenta",
+        under_color="rgba(255, 255, 255, 0)",
     )
 
     return fig, state
