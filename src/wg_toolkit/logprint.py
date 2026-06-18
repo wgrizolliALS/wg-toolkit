@@ -23,7 +23,12 @@ from wg_toolkit.logprint import print_log, print_info, print_warning, print_erro
 
 """
 
-from wg_toolkit.misc import timenow
+from datetime import datetime
+
+
+def _timenow() -> str:
+    # Private copy to avoid circular import with misc.py. Public version: wg_toolkit.misc.timenow
+    return datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
 __all__ = [
     "printc",
@@ -79,31 +84,31 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
 
 
 def print_log(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_info(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : [INFO] {s}", color="blue", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : [INFO] {s}", color="blue", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_warning(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : [WARNING] {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : [WARNING] {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_attention(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : [ATTENTION] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : [ATTENTION] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
 
 
 def print_error(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : [ERROR] {s}", color="red", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : [ERROR] {s}", color="red", bold=True, end=end, flush=flush, verbose=verbose)
 
 
 def print_done(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : [DONE] {s}", color="cyan", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : [DONE] {s}", color="cyan", bold=True, end=end, flush=flush, verbose=verbose)
 
 
 def print_success(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{timenow()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
+    printc(f"[{_timenow()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
 
 _MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
 
