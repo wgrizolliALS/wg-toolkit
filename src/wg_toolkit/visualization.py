@@ -610,8 +610,8 @@ def _example_usage(interactive=True):
         xo_for_profile=0.0,
         yo_for_profile=0.0,
         interactive=interactive,
-        zmax_coverage=0.05,
-        zmin_coverage=0.90,
+        zmax_coverage=0.25,
+        zmin_coverage=0.75,
         over_color="magenta",
         under_color="rgba(255, 255, 255, 0)",
     )
