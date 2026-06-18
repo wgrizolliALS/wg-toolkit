@@ -32,6 +32,7 @@ def plot_profiles_widget(
     profile_percentile: float | None = 0.7615,
     contour_percentiles: list = [0.50],
     color_for_contours=["#FF10F0", "#00FFFF", "#00FF00"],
+    colorscale: str | list = "Magma",
     calc_stats_contours: bool = False,
 ):
     """Create an interactive Plotly figure with a heatmap and linked profiles.
@@ -84,6 +85,11 @@ def plot_profiles_widget(
     color_for_contours : list, optional
         Hex color strings for contour lines, one per percentile (cycles if
         shorter). Default ``["#FF10F0", "#00FFFF", "#00FF00"]``.
+    colorscale : str or list, optional
+        Plotly colorscale for the heatmap. Default ``"Magma"``.
+        Other options include ``"Viridis"``, ``"Plasma"``, ``"Cividis"``, ``"Inferno"``,
+        ``"Jet"``, ``"Hot"``, ``"Rainbow"``, ``"Spectral"``, ``"RdBu"``, ``"RdGy"``, ``"Greys"``.
+        See https://plotly.com/python/builtin-colorscales/#builtin-sequential-color-scales
     calc_stats_contours : bool, optional
         If True, prints area, diameter, centroid, and projection widths for
         each contour percentile and stores them in the returned state dict.
@@ -232,7 +238,7 @@ def plot_profiles_widget(
         x=xl,
         y=yl,
         z=zl,
-        colorscale="Magma",
+        colorscale=colorscale,
         colorbar=_cbar,
         zsmooth=False,
         hovertemplate="x: %{x:.3f}<br>y: %{y:.3f}<br>z: %{z:.4f}<extra></extra>",
@@ -532,12 +538,8 @@ def close_all_FigureWidget() -> None:
 
 _MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
 
-if __name__ == "__main__":
-    print("\n### wg-toolkit.visualization functions:")
-    for name in _MODULE_FUNCTIONS:
-        print(f"  {name}")
 
-    print("\n### Example usage of plot_profiles_widget:")
+def _example_usage(interactive=True):
     x = np.linspace(-5, 5, 1000)
     y = np.linspace(-5, 5, 800)
     X, Y = np.meshgrid(x, y)
@@ -555,8 +557,24 @@ if __name__ == "__main__":
         unitsz="a.u.",
         xo_for_profile=0.0,
         yo_for_profile=0.0,
-        interactive=False,
+        interactive=interactive,
     )
+
+    return fig, state
+
+
+if __name__ == "__main__":
+    print("\n### wg-toolkit.visualization functions:")
+    for name in _MODULE_FUNCTIONS:
+        print(f"  {name}")
+
+    print("\n### Example usage of plot_profiles_widget:")
+    x = np.linspace(-5, 5, 1000)
+    y = np.linspace(-5, 5, 800)
+    X, Y = np.meshgrid(x, y)
+    Z = np.exp(-(X**2 + Y**2) / (2 * 1.0**2)) + 0.1 * np.random.rand(*X.shape)
+
+    fig, state = _example_usage(interactive=False)
     print_done("Example figure created. Opening in browser...")
 
     go.Figure(fig).show(renderer="browser")  # FigureWidget cannot render to browser directly
