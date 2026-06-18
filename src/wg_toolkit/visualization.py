@@ -97,6 +97,45 @@ def plot_profiles_widget(
         Live state dict updated on each click. Contains ``'inputs'`` always;
         ``'1d-profile-stat'`` after a click when ``profile_percentile`` is set;
         ``'2D-stat'`` when ``calc_stats_contours=True``.
+
+    Example
+    -------
+
+    ```python
+
+    x = np.linspace(-5, 5, 1000)
+    y = np.linspace(-5, 5, 800)
+    X, Y = np.meshgrid(x, y)
+    Z = np.exp(-(X**2 + Y**2) / (2 * 1.0**2)) + 0.1 * np.random.rand(*X.shape)
+
+    fig, state = plot_profiles_widget(
+        x,
+        y,
+        Z,
+        xlabel="X (mm)",
+        ylabel="Y (mm)",
+        zlabel="Intensity (a.u.)",
+        unitsx="mm",
+        unitsy="mm",
+        unitsz="a.u.",
+        xo_for_profile=0.0,
+        yo_for_profile=0.0,
+    )
+
+
+    if in jupyter notebook:
+    ```python
+    fig.show()  # <= THIS IS NEEDED TO SHOW THE FIGURE IN A JUPYTER NOTEBOOK, but will not work in a plain Python script or terminal
+    ```
+
+    if in non-notebook environment:
+    ```python
+    go.Figure(fig).show(renderer="browser")  # <= THIS IS NEEDED TO SHOW THE FIGURE IN A BROWSER
+    ```
+
+    but the last approach will not have the interactive click callbacks. This is a limitation of Plotly's
+    FigureWidget, which relies on Jupyter's comms for interactivity. To have interactive profiles,
+    you must be in a Jupyter environment (not plain Python script or terminal).
     """
 
     state = {}
@@ -516,6 +555,7 @@ if __name__ == "__main__":
         unitsz="a.u.",
         xo_for_profile=0.0,
         yo_for_profile=0.0,
+        interactive=False,
     )
     print_done("Example figure created. Opening in browser...")
 
