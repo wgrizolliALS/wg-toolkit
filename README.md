@@ -77,10 +77,20 @@ uv run python -c "import wg_toolkit; print('wg-toolkit installed successfully!')
 
 Alternativelly, run the script located at `scripts\00_check_installation.py` using your favorite python IDE.
 
-
 ## Recomend Usage
 
 These are a few recomended ways of using the toolkit.
+
+### 1. Importing the whole toolkit and using the module name as a prefix for the functions:
+
+```python
+import wg_toolkit as wgtk
+import wg_toolkit.constants as cte
+wgtk.print_info("This is an info message")
+wgtk.print_done(f"Speed of light: {cte.SPEED_OF_LIGHT_C} m/s")
+```
+
+### 2. Importing only the needed functions from the modules:
 
 ```python
 from wg_toolkit.logprint import print_info, print_done, print_error
