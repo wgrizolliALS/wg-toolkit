@@ -61,6 +61,23 @@ This is exact for **all** 2D Gaussians, regardless of aspect ratio or correlatio
 
 ### 1D ↔ 2D Percentile Mapping (separable Gaussians only)
 
+For separable Gaussian profiles, convert a 1D central-mass percentile to the
+equivalent 2D enclosed-mass percentile with:
+
+$$p_\text{2D} = 1 - \exp\!\left(-\left[\mathrm{erfinv}(p_\text{1D})\right]^2\right)$$
+
+Here, `erfinv` is the inverse error function.
+
+Short derivation (standard Gaussian):
+
+$$p_\text{1D} = \operatorname{erf}\!\left(\frac{k}{\sqrt{2}}\right) \Rightarrow k = \sqrt{2}\,\operatorname{erfinv}(p_\text{1D})$$
+
+For a 2D Gaussian, the enclosed mass inside radius $k$ is:
+
+$$p_\text{2D} = 1 - e^{-k^2/2}$$
+
+Substituting the 1D relation for $k$ gives:
+
 $$p_\text{2D} = 1 - \exp\!\left(-\left[\operatorname{erfinv}(p_\text{1D})\right]^2\right)$$
 
 | p_1D | p_2D | Meaning |
