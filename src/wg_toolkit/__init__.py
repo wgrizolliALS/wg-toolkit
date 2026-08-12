@@ -1,5 +1,9 @@
+from importlib.metadata import version as _get_version
+
 from wg_toolkit.misc import *
 from wg_toolkit.logprint import *
+
+__version__ = _get_version("wg-toolkit")
 
 try:
     from wg_toolkit.dataio import *
