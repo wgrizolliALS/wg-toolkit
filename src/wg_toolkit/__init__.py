@@ -1,3 +1,4 @@
+# ruff: noqa: F403, F405
 from importlib.metadata import version as _get_version
 
 from wg_toolkit.misc import *
