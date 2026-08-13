@@ -6,9 +6,10 @@ from wg_toolkit.logprint import print_done, print_error, print_warning
 from wg_toolkit.misc import datenow_str
 
 __all__ = [
-    "local_df_to_csv",
+    "df_to_csv",
     "load_df_from_csv",
     "load_df_from_csv_interactive",
+    "local_df_to_csv",
 ]
 
 def df_to_csv(
@@ -65,58 +66,23 @@ def df_to_csv(
         print_done(f"Saving data to {f_path}...")
 
     with open(f_path, "w") as f:
-        for _attr, _value in df.attrs.items():
-            f.write(f"# {_attr}: {_value}\n")
+        f.writelines(f"# {_attr}: {_value}\n" for _attr, _value in df.attrs.items())
 
     df.to_csv(f_path, index=False, float_format="%.9f", mode="a")
     print_done(f"Data saved to {f_path}")
 
 
-def local_df_to_csv(  # FIXME: Remove in future versions. Use df_to_csv instead.
+def local_df_to_csv(  # FIXME: Remove in a future release. Use df_to_csv instead.
     df: pd.DataFrame, folder: str = "Results", suffix: str = "", force_rewrite: bool = False
 ):
-    """Save a DataFrame to CSV, writing df.attrs as comment lines in the header.
-
-    .. deprecated::
-        Use :func:`df_to_csv` instead.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        DataFrame to save. Must have a ``'Time and Date Label'`` attribute.
-    folder : str, optional
-        Output directory.
-    suffix : str, optional
-        String appended to the filename before the .csv extension.
-    force_rewrite : bool, optional
-        If True, overwrite an existing file without warning.
+    """Removed. Use :func:`df_to_csv` instead.
 
     Raises
     ------
-    FileExistsError
-        If the file already exists and force_rewrite is False.
+    RuntimeError
+        Always. This function has been removed.
     """
-    print_warning(
-        "WARNING: wg_toolkit.df_to_csv is deprecated and will be removed in future versions. "
-        "Please use df_to_csv instead."
-    )
-
-    fname = Path(f"{folder}/{df.attrs['Time and Date Label']}{suffix}.csv")
-
-    if fname.exists() and not force_rewrite:
-        print_error(f"File {fname} already exists. Please choose a different name or suffix. NOTHING DONE.")
-        raise FileExistsError(f"File {fname} already exists. Please choose a different name or suffix.")
-    elif fname.exists():
-        print_warning(f"File {fname} already exists. It will be overwritten.")
-
-    fname.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(fname, "w") as f:
-        for _attr, _value in df.attrs.items():
-            f.write(f"# {_attr}: {_value}\n")
-
-    df.to_csv(fname, index=False, float_format="%.9f", mode="a")
-    print_done(f"Data saved to {fname}")
+    raise RuntimeError("local_df_to_csv was removed; use df_to_csv instead.")
 
 
 def load_df_from_csv(fname: str) -> pd.DataFrame:
