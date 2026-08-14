@@ -4,11 +4,11 @@ import time
 from wg_toolkit.logprint import print_info, print_warning, printc, print_error, print_done
 
 __all__ = [
-    "list_serial_ports",
     "close_all_ports",
     "close_serial_connection",
-    "serial_query",
+    "list_serial_ports",
     "serial_batched",
+    "serial_query",
 ]
 
 DEBUG = False
@@ -208,12 +208,18 @@ def serial_batched(
         time.sleep(wait_between_cmds)
     return res
 
-_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+_MODULE_FUNCTIONS = [
+    k for k, v in globals().items() if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+]
 
 if __name__ == "__main__":
     print("\n### wg-toolkit.ports functions:")
     for name in _MODULE_FUNCTIONS:
         print(f"  {name}")
+
+    for name in _MODULE_FUNCTIONS:
+        if name not in __all__:
+            print(f"Error: '{name}' is defined but missing from __all__.")
 
     printc("This module provides functions for listing and closing serial ports.", color="cyan", bold=True)
     printc(

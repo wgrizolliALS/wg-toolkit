@@ -7,8 +7,8 @@ from wg_toolkit.analysis import nearest, hdr, hdr2d, variance, fwhm
 from wg_toolkit.logprint import print_done, print_warning, print_info, print_log
 
 __all__ = [
-    "plot_profiles_widget",
     "close_all_FigureWidget",
+    "plot_profiles_widget",
 ]
 
 _active_figures: list[go.FigureWidget] = []
@@ -586,7 +586,9 @@ def close_all_FigureWidget() -> None:
     _active_figures.clear()
 
 
-_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+_MODULE_FUNCTIONS = [
+    k for k, v in globals().items() if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+]
 
 
 def _example_usage(interactive=True):
@@ -623,6 +625,10 @@ if __name__ == "__main__":
     print("\n### wg-toolkit.visualization functions:")
     for name in _MODULE_FUNCTIONS:
         print(f"  {name}")
+
+    for name in _MODULE_FUNCTIONS:
+        if name not in __all__:
+            print(f"Error: '{name}' is defined but missing from __all__.")
 
     print("\n### Example usage of plot_profiles_widget:")
     x = np.linspace(-5, 5, 1000)

@@ -3,12 +3,12 @@ import numpy as np
 from wg_toolkit.constants import SDV2FWHM
 
 __all__ = [
+    "argnearest",
+    "fwhm",
     "hdr",
     "hdr2d",
     "nearest",
-    "argnearest",
     "variance",
-    "fwhm",
 ]
 
 
@@ -325,9 +325,15 @@ def fwhm(x_arr: np.ndarray, w_arr: np.ndarray) -> float:
     return SDV2FWHM * np.sqrt(variance(x_arr, w_arr))
 
 
-_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+_MODULE_FUNCTIONS = [
+    k for k, v in globals().items() if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+]
 
 if __name__ == "__main__":
     print("\n### wg-toolkit.analysis functions:")
     for name in _MODULE_FUNCTIONS:
         print(f"  {name}")
+
+    for name in _MODULE_FUNCTIONS:
+        if name not in __all__:
+            print(f"Error: '{name}' is defined but missing from __all__.")

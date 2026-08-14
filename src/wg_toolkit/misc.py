@@ -8,10 +8,11 @@ from .logprint import *
 __all__ = [
     "datenow",
     "datenow_str",
-    "timenow",
-    "timenow_str",
     "get_unique_fname",
     "mkdir_dated",
+    "select_file_interactive",
+    "timenow",
+    "timenow_str",
 ]
 
 def datenow() -> str:
@@ -167,9 +168,79 @@ def get_unique_fname(
 #         return f"{base_name}_{index:02d}.{extension}"
 
 
-_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+def select_file_interactive(
+    pattern: str = "*",
+    message_to_print: str | None = None,
+    recursive: bool = True,
+) -> str:
+    """Interactively select a file matching a glob pattern.
+
+    If exactly one file matches, it is returned immediately. Otherwise, the
+    matches are listed and the user is prompted to pick one by index,
+    re-prompting on invalid input.
+
+    Parameters
+    ----------
+    pattern : str, optional
+        Glob pattern to search for files. See
+        https://docs.python.org/3/library/glob.html#glob.glob for pattern syntax.
+    message_to_print : str, optional
+        Message printed before the numbered file list. If None, a default
+        message is used.
+    recursive : bool, optional
+        If True, ``"**"`` in pattern matches any files and zero or more
+        directories. See :py:func:`glob.glob`.
+
+    Returns
+    -------
+    str
+        Path of the selected file, or an empty string if no files match ``pattern``.
+
+    Examples
+    --------
+    >>> select_file_interactive("*.csv")
+    """
+    import glob
+
+    file_list = sorted(glob.glob(pattern, recursive=recursive))
+
+    if not file_list:
+        print_error(f"No files found matching pattern '{pattern}'.")
+        return ""
+
+    if len(file_list) == 1:
+        print_log(f"Only one match. Loading {file_list[0]}")
+        return file_list[0]
+
+    print(message_to_print or "Enter the index of the file to select:")
+    for i, fname in enumerate(file_list):
+        print(f"[{i:>2}]: {fname}")
+
+    while True:
+        input_str = input("> ")
+        try:
+            idx = int(input_str)
+        except ValueError:
+            print_error(f"Invalid input: '{input_str}'. Please enter a valid number.")
+            continue
+
+        if 0 <= idx < len(file_list):
+            return file_list[idx]
+
+        print_error(f"Invalid index: {idx}. Choose a number between 0 and {len(file_list) - 1}.")
+
+
+_MODULE_FUNCTIONS = [
+    k
+    for k, v in globals().items()
+    if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+]
 
 if __name__ == "__main__":
     print("\n### wg-toolkit.misc functions:")
     for name in _MODULE_FUNCTIONS:
         print(f"  {name}")
+
+    for name in _MODULE_FUNCTIONS:
+        if name not in __all__:
+            print(f"Error: '{name}' is defined but missing from __all__.")
