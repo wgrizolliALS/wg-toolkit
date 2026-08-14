@@ -31,26 +31,70 @@ def _timenow() -> str:
     return datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
 __all__ = [
-    "printc",
-    "print_log",
-    "print_info",
-    "print_warning",
     "print_attention",
-    "print_error",
+    "print_available_colors",
     "print_done",
+    "print_error",
+    "print_info",
+    "print_log",
     "print_success",
+    "print_warning",
+    "printc",
 ]
 
-_color_ANSI_Escape_codes = {
-    "red": "91",
-    "green": "92",
-    "blue": "94",
-    "purple": "95",
-    "cyan": "96",
-    "gray": "90",
+_ANSI_escape_color_codes = {
     "": "0",  # Default terminal color
+    # Normal (30-37)
+    "black": "30",
+    "red": "31",
+    "green": "32",
+    "yellow": "33",
+    "blue": "34",
+    "purple": "35",  # magenta
+    "cyan": "36",
+    "white": "37",
+    # Bright (90-97)
+    "gray": "90",  # bright black
+    "bright_red": "91",
+    "bright_green": "92",
+    "bright_yellow": "93",
+    "bright_blue": "94",
+    "bright_purple": "95",  # bright magenta
+    "bright_cyan": "96",
+    "bright_white": "97",
+    "bg_black": "40",  # background colors have the bg_ prefix
+    "bg_red": "41",
+    "bg_green": "42",
+    "bg_yellow": "43",
+    "bg_blue": "44",
+    "bg_purple": "45",  # magenta
+    "bg_cyan": "46",
+    "bg_white": "47",
+    # Bright (100-107)
+    "bg_gray": "100",  # bright black
+    "bg_bright_red": "101",
+    "bg_bright_green": "102",
+    "bg_bright_yellow": "103",
+    "bg_bright_blue": "104",
+    "bg_bright_purple": "105",  # bright magenta
+    "bg_bright_cyan": "106",
+    "bg_bright_white": "107",
 }
 
+# the available colors are described in https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
+
+# Range	Meaning
+# 30-37	foreground, normal
+# 40-47	background, normal
+# 90-97	foreground, bright
+# 100-107	background, bright
+
+
+def print_available_colors():
+    """Print the available colors and their corresponding ANSI escape codes."""
+    print("Available colors:")
+    for color, code in _ANSI_escape_color_codes.items():
+        print(f"{color}: \033[{code}mSample Text\033[0m")
 
 def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: bool = True, verbose: bool = True):
     """Print `s` to stdout wrapped in ANSI color/bold escape codes.
@@ -60,8 +104,7 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
     s : str
         The input string to colorize.
     color : str, optional
-        Color name. One of: red, green, blue, purple, cyan, gray, or empty
-        string for the default terminal color.
+        Color name. Use `print_available_colors()` to see the available colors. Default is no color.
     bold : bool, optional
         If True, make the text bold.
     end : str, optional
@@ -75,52 +118,64 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
     if not verbose:
         return
 
-    if color not in _color_ANSI_Escape_codes:
-        raise ValueError(f"Invalid color '{color}'. Valid options are: {list(_color_ANSI_Escape_codes.keys())}")
+    if color not in _ANSI_escape_color_codes:
+        raise ValueError(f"Invalid color '{color}'. Valid options are: {list(_ANSI_escape_color_codes.keys())}")
 
-    color_code = _color_ANSI_Escape_codes[color]
+    color_code = _ANSI_escape_color_codes[color]
     bold_code = "1;" if bold else ""
     print(f"\033[{bold_code}{color_code}m{s}\033[0m", end=end, flush=flush)
 
 
-def print_log(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
+def print_log(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
     printc(f"[{_timenow()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_info(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
+def print_info(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
     printc(f"[{_timenow()}] : [INFO] {s}", color="blue", bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_warning(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [WARNING] {s}", color="purple", bold=False, end=end, flush=flush, verbose=verbose)
+def print_warning(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
+    printc(f"[{_timenow()}] : [WARNING] {s}", color="bg_red", bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_attention(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [ATTENTION] {s}", color="red", bold=False, end=end, flush=flush, verbose=verbose)
+def print_attention(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
+    printc(f"[{_timenow()}] : [ATTENTION] {s}", color="bg_yellow", bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_error(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [ERROR] {s}", color="red", bold=True, end=end, flush=flush, verbose=verbose)
+def print_error(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
+    printc(f"[{_timenow()}] : [ERROR] {s}", color="bg_bright_red", bold=True, end=end, flush=flush, verbose=verbose)
 
 
-def print_done(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [DONE] {s}", color="cyan", bold=True, end=end, flush=flush, verbose=verbose)
+def print_done(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
+    printc(f"[{_timenow()}] : [DONE] {s}", color="bg_green", bold=True, end=end, flush=flush, verbose=verbose)
 
 
-def print_success(s: str, end: str = "\n", flush: bool = True, verbose: bool = True):
+def print_success(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
     printc(f"[{_timenow()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
 
-_MODULE_FUNCTIONS = [k for k, v in globals().items() if callable(v) and not k.startswith("_")]
+_MODULE_FUNCTIONS = [
+    k
+    for k, v in globals().items()
+    if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+]
 
 
 if __name__ == "__main__":
-    printc("### This module provides enhanced logging functions with color and timestamps.", color="cyan", bold=True)
+    printc("\n ### Example of printc messages with different colors and boldness ### ", color="bg_yellow", bold=True)
 
-    print("\n### wg-toolkit.logprint functions:")
+    for _color in _ANSI_escape_color_codes:
+        for _bold in [False, True]:
+            printc(f"This is a message in {_color} color and bold={_bold}.", color=_color, bold=_bold)
+
+    printc("\n### wg-toolkit.logprint functions:", color="bg_yellow", bold=True)
     for name in _MODULE_FUNCTIONS:
         print(f"  {name}")
 
-    print("\n### Example of logprint messages:")
+    for name in _MODULE_FUNCTIONS:
+        if name not in __all__:
+            print_warning(f"Error: '{name}' is defined but missing from __all__.")
+
+    printc("\n### Example of logprint messages:", color="bg_yellow", bold=True)
 
     print_log("This is a log message. Note the automatic timestamp.")
     print_info("This is an info message. Note the automatic timestamp.")
@@ -129,7 +184,3 @@ if __name__ == "__main__":
     print_error("This is an error message. Note the automatic timestamp.")
     print_done("This is a done message. Note the automatic timestamp.")
     print_success("This is a success message. Note the automatic timestamp.")
-
-    for _color in _color_ANSI_Escape_codes.keys():
-        for _bold in [False, True]:
-            printc(f"This is a message in {_color} color and bold={_bold}.", color=_color, bold=_bold)
