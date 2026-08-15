@@ -159,52 +159,104 @@ def local_df_to_csv(  # FIXME: Remove in a future release. Use df_to_csv instead
     """
     raise RuntimeError("local_df_to_csv was removed; use df_to_csv instead.")
 
-def load_array_from_csv(fname: str, delimiter: str = ",", comment_str: str = "#", header: int | None = 0):
+def load_array_from_csv(
+    fname: str,
+    comment_str: str = "#",
+    delimiter: str | None = None,
+    header: int = -1,
+    skiprows: int | None = None,
+    **loadtxt_kwargs,
+):
     """
-    Load a CSV file into a numpy array and return the data, comments, and column names.
-
-    This is a wrapper for :func:`load_df_from_csv` that unpacks the DataFrame it
-    returns into plain arrays/lists, for callers that want array data without
-    working with a DataFrame directly.
+    Load a CSV file into a numpy array and return the data, column names, and comments.
 
     Parameters
     ----------
     fname : str
         Path to the CSV file.
-    delimiter : str, optional
-        Delimiter used in the CSV file. Default is ``","``.
     comment_str : str, optional
-        String marking comment lines. Default is ``"#"``.
-    header : int or None, optional
-        Same semantics as :func:`load_df_from_csv`'s ``header``. Default is
-        ``0``, matching files written by :func:`df_to_csv`. Pass ``-1`` for
-        files whose header row is itself a comment line (e.g. from other
-        tools), with the header taken as the LAST comment line.
+        Prefix marking comment lines. Default is ``"#"``.
+    delimiter : str, optional
+        Delimiter used to split data columns, forwarded to :func:`numpy.loadtxt`.
+        Default is ``None`` (any whitespace).
+    header : int, optional
+        Ignored if ``skiprows`` is given explicitly. Controls where colNames
+        come from, after the leading ``comment_str``-prefixed lines are
+        counted:
+
+        - ``-1`` (default): the header is the LAST comment line - it is
+          itself ``comment_str``-prefixed. ``skiprows`` is the number of
+          comment lines (no extra row consumed). If there are no comment
+          lines at all, ``colNames`` ends up empty.
+        - ``0``: the header is the first UNcommented row right after the
+          comment block, e.g. files written by :func:`df_to_csv`.
+          ``skiprows`` is the number of comment lines plus one.
+    skiprows : int or None, optional
+        If given, bypasses ``header`` entirely: exactly this many leading
+        lines are skipped and returned as ``comments``, with ``colNames``
+        taken from the last of those lines. Use this for files whose shape
+        neither ``header`` mode handles.
+    **loadtxt_kwargs
+        Additional keyword arguments forwarded to :func:`numpy.loadtxt`
+        (e.g. ``dtype``, ``usecols``, ``unpack``, ``max_rows``).
 
     Returns
     -------
     data : np.ndarray
         The data from the CSV file.
-    comments : list of str
-        Comment lines from the header, reconstructed as ``"key: value"`` strings.
     colNames : list of str
-        Column names of the data.
+        Column names, extracted from the header row by splitting on commas
+        (or a single-element list if that line has no comma).
+    comments : list of str
+        The skipped leading lines (raw, including any trailing newline).
 
-    Example
-    -------
+    Examples
+    --------
     >>> import wg_toolkit as wgtk
-    >>> data, comments, colNames = wgtk.load_array_from_csv("data.csv")
-    >>> # for a foreign file with a commented header line:
-    >>> data, comments, colNames = wgtk.load_array_from_csv("legacy.csv", header=-1)
-
+    >>> # legacy file whose header is itself a comment line:
+    >>> data, colNames, comments = wgtk.load_array_from_csv("legacy.csv", delimiter=",")
+    >>> # file written by df_to_csv (uncommented header row after the comments):
+    >>> data, colNames, comments = wgtk.load_array_from_csv("data.csv", delimiter=",", header=0)
+    >>> # foreign file whose shape neither header mode handles:
+    >>> data, colNames, comments = wgtk.load_array_from_csv("weird.csv", skiprows=3)
     """
 
-    _df = load_df_from_csv(fname, delimiter=delimiter, comment_str=comment_str, header=header)
-    _data = _df.to_numpy()
-    _colNames = list(_df.columns)
-    _comments = [f"{_key}: {_value}" for _key, _value in _df.attrs.items()]
+    comments = []
+    header_line = None
+    with open(fname) as input_file:
+        if skiprows is None:
+            while True:
+                line = input_file.readline()
+                if not line or not line.startswith(comment_str):
+                    break
+                line = line.replace(comment_str, '', 1).strip()
+                comments.append(line)
+            skiprows = len(comments)
 
-    return _data, _comments, _colNames
+            if header == 0:
+                if line:
+                    header_line = line.rstrip("\n")
+                    skiprows += 1
+            elif header == -1 and comments:
+                header_line = comments[-1].removeprefix(comment_str).rstrip("\n")
+        else:
+            for _ in range(skiprows):
+                line = input_file.readline()
+                if not line:
+                    break
+                comments.append(line)
+            if comments:
+                header_line = comments[-1].removeprefix(comment_str).rstrip("\n")
+
+    colNames = []
+    if header_line is not None:
+        colNames = header_line.split(",") if "," in header_line else [header_line]
+
+    loadtxt_kwargs.setdefault("delimiter", delimiter)
+    loadtxt_kwargs.setdefault("skiprows", skiprows)
+    data = np.loadtxt(fname, **loadtxt_kwargs)
+
+    return data, colNames, comments
 
 
 def load_df_from_csv(fname: str, delimiter: str = ",", comment_str: str = "#", header: int | None = 0) -> pd.DataFrame:
@@ -245,7 +297,12 @@ def load_df_from_csv(fname: str, delimiter: str = ",", comment_str: str = "#", h
         df = pd.read_csv(fname, delimiter=delimiter, skiprows=len(comment_lines), header=None, names=col_names)
     else:
         metadata = comment_lines
-        df = pd.read_csv(fname, delimiter=delimiter, skiprows=len(comment_lines), header=header)
+        df = pd.read_csv(
+            fname,
+            delimiter=delimiter,
+            skiprows=len(comment_lines),
+            header=header,
+        )
 
     for line in metadata:
         key, _, value = line.partition(": ")
