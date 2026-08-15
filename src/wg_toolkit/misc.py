@@ -1,19 +1,25 @@
+# ruff: noqa: DTZ005
+
 from datetime import datetime
-# import os
 from pathlib import Path
 
 from .logprint import *
-
 
 __all__ = [
     "datenow",
     "datenow_str",
     "get_unique_fname",
     "mkdir_dated",
+    "print_path",
     "select_file_interactive",
     "timenow",
     "timenow_str",
 ]
+
+def print_path(path: str | Path) -> None:
+    """Print the given path as a URI."""
+    print(Path(path).as_uri())
+
 
 def datenow() -> str:
     """Return the current date and time as a sortable string: YYYY:MM:DD HH:MM:SS."""
@@ -177,7 +183,8 @@ def select_file_interactive(
 
     If exactly one file matches, it is returned immediately. Otherwise, the
     matches are listed and the user is prompted to pick one by index,
-    re-prompting on invalid input.
+    re-prompting on invalid input. The prompt can be cancelled with an empty
+    line, ``"q"``, Ctrl-D (EOF) or Ctrl-C.
 
     Parameters
     ----------
@@ -194,7 +201,8 @@ def select_file_interactive(
     Returns
     -------
     str
-        Path of the selected file, or an empty string if no files match ``pattern``.
+        Path of the selected file, or an empty string if no files match
+        ``pattern`` or the user cancels the prompt.
 
     Examples
     --------
@@ -215,9 +223,20 @@ def select_file_interactive(
     print(message_to_print or "Enter the index of the file to select:")
     for i, fname in enumerate(file_list):
         print(f"[{i:>2}]: {fname}")
+    print("(press Enter, 'q', Ctrl-D or Ctrl-C to cancel)")
 
     while True:
-        input_str = input("> ")
+        try:
+            input_str = input("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            print_log("Selection cancelled.")
+            return ""
+
+        if input_str == "" or input_str.lower() in ("q", "quit"):
+            print_log("Selection cancelled.")
+            return ""
+
         try:
             idx = int(input_str)
         except ValueError:
