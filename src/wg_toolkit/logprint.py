@@ -90,7 +90,7 @@ _ANSI_escape_color_codes = {
 # 100-107	background, bright
 
 
-def print_available_colors():
+def logprint_available_colors():
     """Print the available colors and their corresponding ANSI escape codes."""
     print("Available colors:")
     for color, code in _ANSI_escape_color_codes.items():
@@ -104,7 +104,7 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
     s : str
         The input string to colorize.
     color : str, optional
-        Color name. Use `print_available_colors()` to see the available colors. Default is no color.
+        Color name. Use `logprint_available_colors()` to see the available colors. Default is no color.
     bold : bool, optional
         If True, make the text bold.
     end : str, optional
@@ -126,32 +126,42 @@ def printc(s: str, color: str = "", bold: bool = False, end: str = "\n", flush: 
     print(f"\033[{bold_code}{color_code}m{s}\033[0m", end=end, flush=flush)
 
 
-def print_log(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : {s}", color="gray", bold=False, end=end, flush=flush, verbose=verbose)
+def print_log(s: str = "", end: str = "\n", flush: bool = True,
+               highlight: bool = False, verbose: bool = True):
+    color = "bg_gray" if highlight else "gray"
+    printc(f"[{_timenow()}] : {s}", color=color, bold=False, end=end, flush=flush, verbose=verbose)
+
+def print_info(s: str = "",
+               end: str = "\n",
+               flush: bool = True,
+               highlight: bool = False,
+               verbose: bool = True):
+    color = "bg_blue" if highlight else "blue"
+    printc(f"[{_timenow()}] : [INFO] {s}", color=color, bold=False, end=end, flush=flush, verbose=verbose)
+
+def print_warning(s: str = "", end: str = "\n", flush: bool = True, highlight: bool = False, verbose: bool = True):
+    color = "bg_red" if highlight else "red"
+    printc(f"[{_timenow()}] : [WARNING] {s}", color=color, bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_info(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [INFO] {s}", color="blue", bold=False, end=end, flush=flush, verbose=verbose)
+def print_attention(s: str = "", end: str = "\n", flush: bool = True, highlight: bool = False, verbose: bool = True):
+    color = "bg_yellow" if highlight else "yellow"
+    printc(f"[{_timenow()}] : [ATTENTION] {s}", color=color, bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_warning(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [WARNING] {s}", color="bg_red", bold=False, end=end, flush=flush, verbose=verbose)
+def print_error(s: str = "", end: str = "\n", flush: bool = True, highlight: bool = False, verbose: bool = True):
+    color = "bg_bright_red" if highlight else "bright_red"
+    printc(f"[{_timenow()}] : [ERROR] {s}", color=color, bold=True, end=end, flush=flush, verbose=verbose)
 
 
-def print_attention(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [ATTENTION] {s}", color="bg_yellow", bold=False, end=end, flush=flush, verbose=verbose)
+def print_done(s: str = "", end: str = "\n", flush: bool = True, highlight: bool = False, verbose: bool = True):
+    color = "bg_green" if highlight else "green"
+    printc(f"[{_timenow()}] : [DONE] {s}", color=color, bold=False, end=end, flush=flush, verbose=verbose)
 
 
-def print_error(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [ERROR] {s}", color="bg_bright_red", bold=True, end=end, flush=flush, verbose=verbose)
-
-
-def print_done(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [DONE] {s}", color="bg_green", bold=True, end=end, flush=flush, verbose=verbose)
-
-
-def print_success(s: str = "", end: str = "\n", flush: bool = True, verbose: bool = True):
-    printc(f"[{_timenow()}] : [SUCCESS] {s}", color="green", bold=True, end=end, flush=flush, verbose=verbose)
+def print_success(s: str = "", end: str = "\n", flush: bool = True, highlight: bool = False, verbose: bool = True):
+    color = "bg_green" if highlight else "green"
+    printc(f"[{_timenow()}] : [SUCCESS] {s}", color=color, bold=True, end=end, flush=flush, verbose=verbose)
 
 _MODULE_FUNCTIONS = [
     k
@@ -159,6 +169,12 @@ _MODULE_FUNCTIONS = [
     if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
 ]
 
+def _helper_print_functions():
+    for name in _MODULE_FUNCTIONS:
+        if name in __all__:
+            eval(f"{name}('Example of {name}')")
+            if name.startswith("print_"):
+                eval(f"{name}('Example of {name} with highlight', highlight=True)")
 
 if __name__ == "__main__":
     printc("\n ### Example of printc messages with different colors and boldness ### ", color="bg_yellow", bold=True)
@@ -177,10 +193,5 @@ if __name__ == "__main__":
 
     printc("\n### Example of logprint messages:", color="bg_yellow", bold=True)
 
-    print_log("This is a log message. Note the automatic timestamp.")
-    print_info("This is an info message. Note the automatic timestamp.")
-    print_warning("This is a warning message. Note the automatic timestamp.")
-    print_attention("This is an attention message. Note the automatic timestamp.")
-    print_error("This is an error message. Note the automatic timestamp.")
-    print_done("This is a done message. Note the automatic timestamp.")
-    print_success("This is a success message. Note the automatic timestamp.")
+    print("\n### Example of functions in __all__ ###")
+    _helper_print_functions()
