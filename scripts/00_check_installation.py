@@ -27,6 +27,7 @@ for module in _lib_list:
 
         _suc_list += [module]
     except ImportError as e:
+        print(f"[ERROR] Failed to import module '{module}': {e}")
         _fail_list += [module]
 
 if _suc_list:

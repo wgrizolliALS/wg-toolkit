@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD034 -->
 # wg-toolkit
 
 Personal toolkit of reusable utilities — small, focused helpers used across lab software projects.
@@ -69,8 +70,9 @@ uv sync
 ```
 
 **Explanation**:
-* `uv lock --upgrade-package wg-toolkit` updates the pinned commit for the `wg-toolkit` dependency in your `uv.lock` file, ensuring that the next `uv sync` installs the latest version from the tracked branch, tag, or commit.
-* `uv sync` then installs this updated version into your `.venv`.
+
+- `uv lock --upgrade-package wg-toolkit` updates the pinned commit for the `wg-toolkit` dependency in your `uv.lock` file, ensuring that the next `uv sync` installs the latest version from the tracked branch, tag, or commit.
+- `uv sync` then installs this updated version into your `.venv`.
 
 ### Option B — Install to develop
 
