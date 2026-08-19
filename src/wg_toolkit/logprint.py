@@ -171,6 +171,10 @@ _MODULE_FUNCTIONS = [
 ]
 
 def _helper_print_functions():
+    printc('\n' + "#"*40, color="bg_yellow", bold=True)
+    printc("#### Example of printing functions #####", color="bg_yellow", bold=True)
+    printc("#"*40 + "\n", color="bg_yellow", bold=True)
+
     for name in __all__:
         if name in __all__ and name.startswith("print_"):
             eval(f"{name}('Example of {name}',)")
