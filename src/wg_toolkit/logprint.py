@@ -31,8 +31,9 @@ def _timenow() -> str:
     return datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
 __all__ = [
+    "_helper_print_functions",
+    "logprint_available_colors",
     "print_attention",
-    "print_available_colors",
     "print_done",
     "print_error",
     "print_info",
@@ -170,11 +171,10 @@ _MODULE_FUNCTIONS = [
 ]
 
 def _helper_print_functions():
-    for name in _MODULE_FUNCTIONS:
-        if name in __all__:
-            eval(f"{name}('Example of {name}')")
-            if name.startswith("print_"):
-                eval(f"{name}('Example of {name} with highlight', highlight=True)")
+    for name in __all__:
+        if name in __all__ and name.startswith("print_"):
+            eval(f"{name}('Example of {name}',)")
+            eval(f"{name}('Example of {name} with highlight', highlight=True)")
 
 if __name__ == "__main__":
     printc("\n ### Example of printc messages with different colors and boldness ### ", color="bg_yellow", bold=True)
