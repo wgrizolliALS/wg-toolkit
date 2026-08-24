@@ -294,6 +294,8 @@ def load_df_from_csv(fname: str, delimiter: str = ",", comment_str: str = "#", h
 
     if header == -1:
         col_names, metadata = (comment_lines[-1].split(delimiter), comment_lines[:-1]) if comment_lines else (None, [])
+        if col_names:
+            col_names[:] = [s.strip() for s in col_names] 
         df = pd.read_csv(fname, delimiter=delimiter, skiprows=len(comment_lines), header=None, names=col_names)
     else:
         metadata = comment_lines
