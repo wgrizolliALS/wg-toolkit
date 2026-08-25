@@ -19,7 +19,9 @@ _lib_list = ["numpy", "pandas", "scipy"]
 _suc_list = []
 _fail_list = []
 
-print(f"\n[INFO] Checking imports of the following modules:\n\t - {'\n\t - '.join(_lib_list)}")
+print(
+    f"\n[INFO] Checking imports of the following modules:\n\t - {'\n\t - '.join(_lib_list)}"
+)
 print()
 for module in _lib_list:
     try:
@@ -57,7 +59,9 @@ try:
 
 except ImportError as e:
     print(f"[ERROR] Error importing wg_toolkit: {e}")
-    print("[ERROR] Please ensure that wg_toolkit is installed and available in your Python environment.")
+    print(
+        "[ERROR] Please ensure that wg_toolkit is installed and available in your Python environment."
+    )
 
     print(f"ImportError: {e}")
 

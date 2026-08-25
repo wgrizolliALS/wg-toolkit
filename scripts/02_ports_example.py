@@ -1,7 +1,10 @@
-from wg_toolkit.logprint import print_log, print_info, print_warning, print_error, print_done
-
-from wg_toolkit.ports import list_serial_ports, close_all_ports
-
+from wg_toolkit.logprint import (
+    print_done,
+    print_info,
+    print_log,
+    print_warning,
+)
+from wg_toolkit.ports import close_all_ports, list_serial_ports
 
 print_info("Listing available serial ports:")
 ports = list_serial_ports(verbose=False)

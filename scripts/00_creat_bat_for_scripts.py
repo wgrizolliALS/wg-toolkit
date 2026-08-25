@@ -46,9 +46,16 @@ exit /b %rc%
 """
 
 for py_file in python_files:
-    if os.path.normcase(os.path.abspath(py_file)) == os.path.normcase(os.path.abspath(__file__)):
+    if os.path.normcase(os.path.abspath(py_file)) == os.path.normcase(
+        os.path.abspath(__file__)
+    ):
         continue  # Skip this script itself
-    with open(os.path.join(current_dir, f"{os.path.splitext(os.path.basename(py_file))[0]}.bat"), "w") as bat_file:
+    with open(
+        os.path.join(
+            current_dir, f"{os.path.splitext(os.path.basename(py_file))[0]}.bat"
+        ),
+        "w",
+    ) as bat_file:
         # Get the base name of the Python file (without extension)
         base_name = os.path.splitext(os.path.basename(py_file))[0]
 
@@ -62,4 +69,6 @@ for py_file in python_files:
 print("\nDONE! Check folder  for the .bat files:")
 print(f"{current_dir}")
 
-print("\nHOW-TO-USE: In Windows, you can double-click the .bat files to run the corresponding Python scripts.\n\n")
+print(
+    "\nHOW-TO-USE: In Windows, you can double-click the .bat files to run the corresponding Python scripts.\n\n"
+)

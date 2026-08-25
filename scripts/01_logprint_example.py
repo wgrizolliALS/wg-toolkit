@@ -1,11 +1,11 @@
 from wg_toolkit.logprint import (
-    printc,
-    print_log,
-    print_info,
-    print_warning,
     print_attention,
-    print_error,
     print_done,
+    print_error,
+    print_info,
+    print_log,
+    print_warning,
+    printc,
 )
 
 print_log("This is a log message.")
@@ -18,4 +18,8 @@ print_done("This is a done message.")
 
 for _color in ["red", "green", "blue", "purple", "cyan"]:
     for _bold in [False, True]:
-        printc(f"This is a message in {_color} color and bold={_bold}.", color=_color, bold=_bold)
+        printc(
+            f"This is a message in {_color} color and bold={_bold}.",
+            color=_color,
+            bold=_bold,
+        )
