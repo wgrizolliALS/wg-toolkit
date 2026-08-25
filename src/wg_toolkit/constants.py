@@ -15,10 +15,8 @@ print(f"Photon Energy of 1 Angstrom photon: {EngNumber(ph_EN, significant=5)} eV
 """
 
 import numpy as np
-from scipy import constants as sp_constants
-
 from engineering_notation import EngNumber
-
+from scipy import constants as sp_constants
 
 # Define common engineering notation units for convenience
 ENG_UNITS = {  # Dictionary of common engineering units
@@ -109,7 +107,7 @@ def show_all_constants():
         )
     )
 
-    print("")
+    print()
 
 if __name__ == "__main__":
     """

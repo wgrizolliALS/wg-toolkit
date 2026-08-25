@@ -1,7 +1,14 @@
-import serial
-from serial.tools import list_ports
 import time
-from wg_toolkit.logprint import print_info, print_warning, printc, print_error, print_done
+
+import serial  # type: ignore
+from serial.tools import list_ports  # type: ignore
+
+from wg_toolkit.logprint import (
+    print_error,
+    print_info,
+    print_warning,
+    printc,
+)
 
 __all__ = [
     "close_all_ports",
