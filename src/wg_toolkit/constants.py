@@ -48,6 +48,10 @@ RAD2DEG = float(np.rad2deg(1))  # Conversion factor from radians to degrees
 DEG2RAD = float(np.deg2rad(1))  # Conversion factor from degrees to radians
 RAD_TO_PI_RAD = 1 / np.pi  # Converts radians to units of pi (e.g., 3.14 rad -> 1.0)
 PI_RAD_TO_RAD = np.pi  # Converts units of pi back to radians (e.g., 1.0 -> 3.14 rad)
+RAD2MRAD = 1e3  # Conversion factor from radians to milliradians
+MRAD2RAD = 1 / RAD2MRAD  # Conversion factor from milliradians to radians
+RAD2URAD = 1e6  # Conversion factor from radians to microradians
+URAD2RAD = 1 / RAD2URAD  # Conversion factor from microradians to radians
 
 
 # Conversion factors for length
@@ -80,9 +84,7 @@ SEC2DAY = 1 / DAY2SEC  # Conversion factor from seconds to days
 SDV2FWHM = float(2 * np.sqrt(2 * np.log(2)))
 FWHM2SDV = 1.0 / SDV2FWHM
 
-_MODULE_CONSTANTS = {
-    k: v for k, v in locals().items() if not callable(v) and k.isupper()
-}
+_MODULE_CONSTANTS = {k: v for k, v in locals().items() if not callable(v) and k.isupper()}
 
 
 from tabulate import tabulate  # pip install tabulate
