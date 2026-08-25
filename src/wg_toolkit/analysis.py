@@ -188,7 +188,9 @@ def hdr2d(
     if x is not None:
         x = np.asarray(x, dtype=float)
         if f.shape[1] != len(x):
-            raise ValueError(f"f.shape[1] must equal len(x) = {len(x)}; got {f.shape[1]}.")
+            raise ValueError(
+                f"f.shape[1] must equal len(x) = {len(x)}; got {f.shape[1]}."
+            )
         dx = np.gradient(x)
     else:
         dx = np.ones(f.shape[1])
@@ -196,7 +198,9 @@ def hdr2d(
     if y is not None:
         y = np.asarray(y, dtype=float)
         if f.shape[0] != len(y):
-            raise ValueError(f"f.shape[0] must equal len(y) = {len(y)}; got {f.shape[0]}.")
+            raise ValueError(
+                f"f.shape[0] must equal len(y) = {len(y)}; got {f.shape[0]}."
+            )
         dy = np.gradient(y)
     else:
         dy = np.ones(f.shape[0])
@@ -209,7 +213,9 @@ def hdr2d(
     return _hdr_core(f.ravel(), cell_areas.ravel(), coverage)
 
 
-def argnearest(arr: np.ndarray, value: float, flat: bool = False) -> tuple[np.intp, ...] | np.intp:
+def argnearest(
+    arr: np.ndarray, value: float, flat: bool = False
+) -> tuple[np.intp, ...] | np.intp:
     """Return the index of the element of arr nearest to value.
 
     Parameters
@@ -250,7 +256,9 @@ def argnearest(arr: np.ndarray, value: float, flat: bool = False) -> tuple[np.in
     """
     flat_arr = arr.ravel()  # ravel is a no-op for 1D; flattens ND without copy
     flat_idx = np.argmin(np.abs(flat_arr - value))
-    return flat_idx if flat else np.unravel_index(flat_idx, arr.shape)  # scalar or ND tuple
+    return (
+        flat_idx if flat else np.unravel_index(flat_idx, arr.shape)
+    )  # scalar or ND tuple
 
 
 def nearest(arr: np.ndarray, value: float) -> float:
@@ -326,7 +334,11 @@ def fwhm(x_arr: np.ndarray, w_arr: np.ndarray) -> float:
 
 
 _MODULE_FUNCTIONS = [
-    k for k, v in globals().items() if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+    k
+    for k, v in globals().items()
+    if callable(v)
+    and not k.startswith("_")
+    and getattr(v, "__module__", None) == __name__
 ]
 
 if __name__ == "__main__":

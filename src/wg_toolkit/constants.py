@@ -80,7 +80,9 @@ SEC2DAY = 1 / DAY2SEC  # Conversion factor from seconds to days
 SDV2FWHM = float(2 * np.sqrt(2 * np.log(2)))
 FWHM2SDV = 1.0 / SDV2FWHM
 
-_MODULE_CONSTANTS = {k: v for k, v in locals().items() if not callable(v) and k.isupper()}
+_MODULE_CONSTANTS = {
+    k: v for k, v in locals().items() if not callable(v) and k.isupper()
+}
 
 
 from tabulate import tabulate  # pip install tabulate
@@ -93,7 +95,7 @@ def show_all_constants():
     rows = []
     for name, value in _MODULE_CONSTANTS.items():
         try:
-            # – Convert EngNumber to plain str ahead of Tabulate – #
+            # – Convert EngNumber to plain str ahead of Tabulate – #S
             val_str = f"{value:.5g}"
             val_str_eng = str(EngNumber(value, significant=5))
             rows.append([name, type(value).__name__, val_str, val_str_eng])
@@ -103,11 +105,15 @@ def show_all_constants():
     # You’re free to tweak the table format; I’ll keep it “plain”
     print(
         tabulate(
-            rows, headers=["Name", "Type", "Value", "EngNumber"], maxcolwidths=[20, 10, 10, 10], tablefmt="fancy_grid"
+            rows,
+            headers=["Name", "Type", "Value", "EngNumber"],
+            maxcolwidths=[20, 10, 10, 10],
+            tablefmt="fancy_grid",
         )
     )
 
     print()
+
 
 if __name__ == "__main__":
     """
@@ -120,6 +126,5 @@ if __name__ == "__main__":
         "ph_EN = cte.HC/ (1*cte.ANGSTROM2M) # Photon Energy of 1 Angstrom photon\n"
         'print(f"Photon Energy of 1 Angstrom photon: {EngNumber(ph_EN, significant=5)} eV")'
     )
-
 
     show_all_constants()

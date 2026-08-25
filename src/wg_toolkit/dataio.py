@@ -15,6 +15,7 @@ __all__ = [
     "local_df_to_csv",
 ]
 
+
 def array_to_csv(
     arrayList: list[np.ndarray] | np.ndarray,
     fname: str = "output.csv",
@@ -57,8 +58,12 @@ def array_to_csv(
     f_path = Path(folder) / fname
 
     if f_path.exists() and not force_rewrite:
-        print_error(f"File {f_path} already exists. Please choose a different name or suffix. NOTHING DONE.")
-        raise FileExistsError(f"File {f_path} already exists. Please choose a different name or suffix.")
+        print_error(
+            f"File {f_path} already exists. Please choose a different name or suffix. NOTHING DONE."
+        )
+        raise FileExistsError(
+            f"File {f_path} already exists. Please choose a different name or suffix."
+        )
     elif f_path.exists():
         print_warning(f"File {f_path} already exists. It will be overwritten.")
     else:
@@ -70,7 +75,9 @@ def array_to_csv(
     elif isinstance(arrayList, np.ndarray):
         data2save = arrayList
     else:
-        raise TypeError(f"arrayList must be a list or an ndarray, got {type(arrayList)}.")
+        raise TypeError(
+            f"arrayList must be a list or an ndarray, got {type(arrayList)}."
+        )
 
     if np.issubdtype(data2save.dtype, np.integer):
         fmt = "%d"
@@ -133,8 +140,12 @@ def df_to_csv(
 
     if f_path.exists():
         if not force_rewrite:
-            print_error(f"File {f_path} already exists. Please choose a different name or suffix. NOTHING DONE.")
-            raise FileExistsError(f"File {f_path} already exists. Please choose a different name or suffix.")
+            print_error(
+                f"File {f_path} already exists. Please choose a different name or suffix. NOTHING DONE."
+            )
+            raise FileExistsError(
+                f"File {f_path} already exists. Please choose a different name or suffix."
+            )
         print_warning(f"File {f_path} already exists. It will be overwritten.")
     else:
         f_path.parent.mkdir(parents=True, exist_ok=True)
@@ -148,7 +159,10 @@ def df_to_csv(
 
 
 def local_df_to_csv(  # FIXME: Remove in a future release. Use df_to_csv instead.
-    df: pd.DataFrame, folder: str = "Results", suffix: str = "", force_rewrite: bool = False
+    df: pd.DataFrame,
+    folder: str = "Results",
+    suffix: str = "",
+    force_rewrite: bool = False,
 ):
     """Removed. Use :func:`df_to_csv` instead.
 
@@ -158,6 +172,7 @@ def local_df_to_csv(  # FIXME: Remove in a future release. Use df_to_csv instead
         Always. This function has been removed.
     """
     raise RuntimeError("local_df_to_csv was removed; use df_to_csv instead.")
+
 
 def load_array_from_csv(
     fname: str,
@@ -229,7 +244,7 @@ def load_array_from_csv(
                 line = input_file.readline()
                 if not line or not line.startswith(comment_str):
                     break
-                line = line.replace(comment_str, '', 1).strip()
+                line = line.replace(comment_str, "", 1).strip()
                 comments.append(line)
             skiprows = len(comments)
 
@@ -259,7 +274,9 @@ def load_array_from_csv(
     return data, colNames, comments
 
 
-def load_df_from_csv(fname: str, delimiter: str = ",", comment_str: str = "#", header: int | None = 0) -> pd.DataFrame:
+def load_df_from_csv(
+    fname: str, delimiter: str = ",", comment_str: str = "#", header: int | None = 0
+) -> pd.DataFrame:
     """Load a DataFrame from CSV, restoring df.attrs from comment lines.
 
     Parameters
@@ -293,10 +310,20 @@ def load_df_from_csv(fname: str, delimiter: str = ",", comment_str: str = "#", h
             comment_lines.append(line[len(comment_str) :].strip())
 
     if header == -1:
-        col_names, metadata = (comment_lines[-1].split(delimiter), comment_lines[:-1]) if comment_lines else (None, [])
+        col_names, metadata = (
+            (comment_lines[-1].split(delimiter), comment_lines[:-1])
+            if comment_lines
+            else (None, [])
+        )
         if col_names:
-            col_names[:] = [s.strip() for s in col_names] 
-        df = pd.read_csv(fname, delimiter=delimiter, skiprows=len(comment_lines), header=None, names=col_names)
+            col_names[:] = [s.strip() for s in col_names]
+        df = pd.read_csv(
+            fname,
+            delimiter=delimiter,
+            skiprows=len(comment_lines),
+            header=None,
+            names=col_names,
+        )
     else:
         metadata = comment_lines
         df = pd.read_csv(
@@ -333,8 +360,13 @@ def load_df_from_csv_interactive(pathname=".\\*csv") -> pd.DataFrame | None:
     fname = select_file_interactive(pathname)
     return load_df_from_csv(fname) if fname else None
 
+
 _MODULE_FUNCTIONS = [
-    k for k, v in globals().items() if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+    k
+    for k, v in globals().items()
+    if callable(v)
+    and not k.startswith("_")
+    and getattr(v, "__module__", None) == __name__
 ]
 
 if __name__ == "__main__":

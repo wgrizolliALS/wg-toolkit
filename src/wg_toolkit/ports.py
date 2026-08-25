@@ -43,7 +43,10 @@ def list_serial_ports(verbose=False):
     if ports:
         print_info("Available serial ports:", verbose=verbose)
         for port in ports:
-            print_info(f"\t- Device: {port.device}, Description: {port.description}", verbose=verbose)
+            print_info(
+                f"\t- Device: {port.device}, Description: {port.description}",
+                verbose=verbose,
+            )
     else:
         print_warning("No serial ports found.", verbose=verbose)
     return ports
@@ -80,9 +83,13 @@ def close_serial_connection(port: str, verbose: bool = True):
             ser.close()
             print_info(f"Serial connection on {port} closed.", verbose=verbose)
         else:
-            print_info(f"Serial connection on {port} was already closed.", verbose=verbose)
+            print_info(
+                f"Serial connection on {port} was already closed.", verbose=verbose
+            )
     except Exception as e:
-        print_error(f"Failed to close serial connection on {port}: {e}", verbose=verbose)
+        print_error(
+            f"Failed to close serial connection on {port}: {e}", verbose=verbose
+        )
 
 
 def serial_query(
@@ -121,7 +128,10 @@ def serial_query(
     str or None
         The decoded response string, or None on empty response or error.
     """
-    printc(f"[DEBUG] : Attempting to open serial port {port} at baudrate {baudrate}", verbose=debug)
+    printc(
+        f"[DEBUG] : Attempting to open serial port {port} at baudrate {baudrate}",
+        verbose=debug,
+    )
 
     try:
         with serial.Serial(port, baudrate=baudrate, timeout=0.5) as ser:
@@ -134,7 +144,9 @@ def serial_query(
                 printc(f"[DEBUG] : Waiting for response from {cmd}...", verbose=debug)
 
                 if time.time() - _time_init >= 5 * ser.timeout:  # type: ignore
-                    raise TimeoutError(f"Timeout waiting for response to {cmd} on {port}")
+                    raise TimeoutError(
+                        f"Timeout waiting for response to {cmd} on {port}"
+                    )
 
             response = ser.readline().decode(errors="ignore").strip()
 
@@ -215,8 +227,13 @@ def serial_batched(
         time.sleep(wait_between_cmds)
     return res
 
+
 _MODULE_FUNCTIONS = [
-    k for k, v in globals().items() if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+    k
+    for k, v in globals().items()
+    if callable(v)
+    and not k.startswith("_")
+    and getattr(v, "__module__", None) == __name__
 ]
 
 if __name__ == "__main__":
@@ -228,12 +245,20 @@ if __name__ == "__main__":
         if name not in __all__:
             print(f"Error: '{name}' is defined but missing from __all__.")
 
-    printc("This module provides functions for listing and closing serial ports.", color="cyan", bold=True)
     printc(
-        "Use list_serial_ports() to see available ports and close_all_ports() to close them.", color="cyan", bold=True
+        "This module provides functions for listing and closing serial ports.",
+        color="cyan",
+        bold=True,
+    )
+    printc(
+        "Use list_serial_ports() to see available ports and close_all_ports() to close them.",
+        color="cyan",
+        bold=True,
     )
 
     ports = list_serial_ports(verbose=True)
     if ports:
-        printc("\nAttempting to close all open serial ports...", color="cyan", bold=True)
+        printc(
+            "\nAttempting to close all open serial ports...", color="cyan", bold=True
+        )
         close_all_ports()

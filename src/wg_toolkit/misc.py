@@ -16,6 +16,7 @@ __all__ = [
     "timenow_str",
 ]
 
+
 def print_path(path: str | Path) -> None:
     """Print the given path as a URI."""
     print(Path(path).as_uri())
@@ -24,6 +25,7 @@ def print_path(path: str | Path) -> None:
 def datenow() -> str:
     """Return the current date and time as a sortable string: YYYY:MM:DD HH:MM:SS."""
     return datetime.now().strftime("%Y:%m:%d %H:%M:%S")
+
 
 def datenow_str() -> str:
     """Return the current date and time as a sortable string: YYYYMMDD_HHMMSS."""
@@ -39,7 +41,14 @@ def timenow_str() -> str:
     """Return the current time as HHMMSS.mmm."""
     return datetime.now().strftime("%H%M%S.%f")[:-3]
 
-def mkdir_dated(base_path: str, addTime: bool = False, suffix: str = "", prefix: str = "", verbose: bool = True) -> str:
+
+def mkdir_dated(
+    base_path: str,
+    addTime: bool = False,
+    suffix: str = "",
+    prefix: str = "",
+    verbose: bool = True,
+) -> str:
     """Create a folder with the current date in the format YYYYMMDD or YYYYMMDD_HHMMSS.
 
     Parameters
@@ -60,9 +69,14 @@ def mkdir_dated(base_path: str, addTime: bool = False, suffix: str = "", prefix:
 
     """
     if addTime:
-        date_folder = Path(base_path) / f"{prefix}{datetime.now().strftime('%Y%m%d_%H%M%S')}{suffix}"
+        date_folder = (
+            Path(base_path)
+            / f"{prefix}{datetime.now().strftime('%Y%m%d_%H%M%S')}{suffix}"
+        )
     else:
-        date_folder = Path(base_path) / f"{prefix}{datetime.now().strftime('%Y%m%d')}{suffix}"
+        date_folder = (
+            Path(base_path) / f"{prefix}{datetime.now().strftime('%Y%m%d')}{suffix}"
+        )
 
     if date_folder.exists():
         print_warning(f"Directory already exists: {date_folder}", verbose=verbose)
@@ -125,7 +139,11 @@ def get_unique_fname(
         _res_str = str(unique_path.with_suffix(f".{extension}"))
     else:
         index = 0
-        while (parent_dir / f"{path.stem}_{index:02d}").with_suffix(f".{extension}").exists():
+        while (
+            (parent_dir / f"{path.stem}_{index:02d}")
+            .with_suffix(f".{extension}")
+            .exists()
+        ):
             index += 1
         _res_str = parent_dir / f"{path.stem}_{index:02d}".replace(f".{extension}", "")
         _res_str = str(_res_str.with_suffix(f".{extension}"))
@@ -246,13 +264,17 @@ def select_file_interactive(
         if 0 <= idx < len(file_list):
             return file_list[idx]
 
-        print_error(f"Invalid index: {idx}. Choose a number between 0 and {len(file_list) - 1}.")
+        print_error(
+            f"Invalid index: {idx}. Choose a number between 0 and {len(file_list) - 1}."
+        )
 
 
 _MODULE_FUNCTIONS = [
     k
     for k, v in globals().items()
-    if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
+    if callable(v)
+    and not k.startswith("_")
+    and getattr(v, "__module__", None) == __name__
 ]
 
 if __name__ == "__main__":
