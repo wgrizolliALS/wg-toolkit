@@ -70,13 +70,10 @@ def mkdir_dated(
     """
     if addTime:
         date_folder = (
-            Path(base_path)
-            / f"{prefix}{datetime.now().strftime('%Y%m%d_%H%M%S')}{suffix}"
+            Path(base_path) / f"{prefix}{datetime.now().strftime('%Y%m%d_%H%M%S')}{suffix}"
         )
     else:
-        date_folder = (
-            Path(base_path) / f"{prefix}{datetime.now().strftime('%Y%m%d')}{suffix}"
-        )
+        date_folder = Path(base_path) / f"{prefix}{datetime.now().strftime('%Y%m%d')}{suffix}"
 
     if date_folder.exists():
         print_warning(f"Directory already exists: {date_folder}", verbose=verbose)
@@ -99,7 +96,7 @@ def get_unique_fname(
     Parameters
     ----------
     base_name : str
-        The base name of the file (without extension).
+        The base name of the file (without extension). DO NOT include the folder path. See ``base_path`` for specifying the folder.
     extension : str, optional
         The file extension. Default is ``"png"``.
     base_path : str, optional
@@ -114,7 +111,7 @@ def get_unique_fname(
     Returns
     -------
     str
-        A unique filename in the format ``"{base_name}_{index:02d}.{extension}"``.
+        A unique filename in the format ``"{base_name}_{index:02d}.{extension}"``. The folder path is determined by ``base_path``.
     See Also
     --------
     wg_toolkit.misc.mkdir_dated: Create a directory with the current date and time.
@@ -139,16 +136,18 @@ def get_unique_fname(
         _res_str = str(unique_path.with_suffix(f".{extension}"))
     else:
         index = 0
-        while (
-            (parent_dir / f"{path.stem}_{index:02d}")
-            .with_suffix(f".{extension}")
-            .exists()
-        ):
+        while (parent_dir / f"{path.stem}_{index:02d}").with_suffix(f".{extension}").exists():
             index += 1
         _res_str = parent_dir / f"{path.stem}_{index:02d}".replace(f".{extension}", "")
         _res_str = str(_res_str.with_suffix(f".{extension}"))
 
-    print_log(f"Unique filename: {_res_str}", verbose=verbose)
+    if verbose:
+        try:
+            print_log("Unique filename:")
+            print_path(_res_str)
+
+        except Exception as _:
+            print_log(f"Unique filename: {_res_str}")
     return _res_str
 
 
@@ -240,7 +239,7 @@ def select_file_interactive(
 
     print(message_to_print or "Enter the index of the file to select:")
     for i, fname in enumerate(file_list):
-        print(f"[{i:>2}]: {fname}")
+        print(f"[{i:>2}]:", Path(fname).resolve().as_uri())
     print("(press Enter, 'q', Ctrl-D or Ctrl-C to cancel)")
 
     while True:
@@ -264,17 +263,13 @@ def select_file_interactive(
         if 0 <= idx < len(file_list):
             return file_list[idx]
 
-        print_error(
-            f"Invalid index: {idx}. Choose a number between 0 and {len(file_list) - 1}."
-        )
+        print_error(f"Invalid index: {idx}. Choose a number between 0 and {len(file_list) - 1}.")
 
 
 _MODULE_FUNCTIONS = [
     k
     for k, v in globals().items()
-    if callable(v)
-    and not k.startswith("_")
-    and getattr(v, "__module__", None) == __name__
+    if callable(v) and not k.startswith("_") and getattr(v, "__module__", None) == __name__
 ]
 
 if __name__ == "__main__":
